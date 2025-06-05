@@ -1,11 +1,14 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
+<%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions" %>
 
 <!DOCTYPE html>
 <html>
 <head>
     <meta charset="UTF-8">
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Gestión de Citas</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.7.2/font/bootstrap-icons.css" rel="stylesheet">
@@ -235,9 +238,9 @@
                                 <td>${cita.id}</td>
                                 <td><fmt:formatDate value="${cita.fecha}" pattern="dd/MM/yyyy"/></td>
                                 <td>${cita.hora}</td>
-                                <td>${cita.paciente.nombres} ${cita.paciente.apellidos}</td>
-                                <td>${cita.doctor.nombres} ${cita.doctor.apellidos}</td>
-                                <td>${cita.doctor.especialidad.nombre}</td>
+                                <td>${fn:escapeXml(cita.paciente.nombres)} ${fn:escapeXml(cita.paciente.apellidos)}</td>
+                                <td>${fn:escapeXml(cita.doctor.nombres)} ${fn:escapeXml(cita.doctor.apellidos)}</td>
+                                <td>${not empty cita.doctor.especialidad ? fn:escapeXml(cita.doctor.especialidad.nombre) : 'No asignada'}</td>
                                 <td>
                                     <span class="estado-badge estado-${cita.estado.toLowerCase()}">
                                         ${cita.estado}
@@ -311,6 +314,8 @@
     <script src="https://cdn.datatables.net/buttons/2.4.2/js/buttons.html5.min.js"></script>
     <script src="https://cdn.datatables.net/buttons/2.4.2/js/buttons.print.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.7.32/dist/sweetalert2.all.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.1/moment.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.1/locale/es.js"></script>
 
     <script>
         $(document).ready(function() {
@@ -339,7 +344,9 @@
                 ],
                 order: [[1, 'desc'], [2, 'asc']],
                 pageLength: 10,
-                responsive: true
+                responsive: true,
+                processing: true,
+                serverSide: false
             });
         });
 
