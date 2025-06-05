@@ -22,12 +22,7 @@
         </li>
         <li>
             <a class="dropdown-item ${i18n:currentLocale(pageContext.request) == 'pt' ? 'active' : ''}" href="?locale=pt">
-                <span class="fi fi-br me-2"></span>Português
-            </a>
-        </li>
-        <li>
-            <a class="dropdown-item ${i18n:currentLocale(pageContext.request) == 'it' ? 'active' : ''}" href="?locale=it">
-                <span class="fi fi-it me-2"></span>Italiano
+                <span class="fi fi-br me-2"></span>Français
             </a>
         </li>
     </ul>
