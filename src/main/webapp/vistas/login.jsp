@@ -2,14 +2,13 @@
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
 
-<!DOCTYPE html>
-
 <fmt:setLocale value="${param.lang != null ? param.lang : 'es'}" />
 <fmt:setBundle basename="messages" />
 
+<!DOCTYPE html>
 <html lang="es">
 <head>
-    <title><fmt:message key="login.title"/></title>
+    </title><fmt:message key="login.title"/></title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.7.2/font/bootstrap-icons.css" rel="stylesheet">
     <style>
@@ -144,13 +143,7 @@
             <p><fmt:message key="login.instructions" /></p>
         </div>
         
-        <c:if test="${not empty error}">
-            <div class="alert alert-danger alert-dismissible fade show" role="alert">
-                <i class="bi bi-exclamation-triangle-fill"></i>
-                ${error}
-                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-            </div>
-        </c:if>
+        
 
         <form action="${pageContext.request.contextPath}/login" method="post">
             <div class="form-floating">

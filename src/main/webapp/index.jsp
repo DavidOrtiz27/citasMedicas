@@ -1,9 +1,13 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
+<%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
+
+<fmt:setLocale value="${param.lang != null ? param.lang : 'es'}" />
+<fmt:setBundle basename="messages" />
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <title>Sistema de Gestión de Citas Médicas</title>
+    <title><fmt:message key="index.title"/></title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.7.2/font/bootstrap-icons.css" rel="stylesheet">
     <style>
@@ -216,7 +220,7 @@
     <nav class="navbar navbar-expand-lg navbar-dark">
         <div class="container">
             <a class="navbar-brand" href="${pageContext.request.contextPath}/">
-                <i class="bi bi-hospital"></i> Sistema de Citas Médicas
+                <i class="bi bi-hospital"></i> <fmt:message key="index.systemName" />
             </a>
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
                 <span class="navbar-toggler-icon"></span>
@@ -225,17 +229,17 @@
                 <ul class="navbar-nav ms-auto">
                     <li class="nav-item">
                         <a class="nav-link" href="${pageContext.request.contextPath}/vistas/publico/consultaCitas.jsp">
-                            <i class="bi bi-search"></i> Consultar Citas
+                            <i class="bi bi-search"></i> <fmt:message key="index.query" />
                         </a>
                     </li>
                     <li class="nav-item">
                         <a class="nav-link" href="${pageContext.request.contextPath}/vistas/publico/solicitarCita.jsp">
-                            <i class="bi bi-calendar-plus"></i> Solicitar Cita
+                            <i class="bi bi-calendar-plus"></i> <fmt:message key="index.make" />
                         </a>
                     </li>
                     <li class="nav-item">
                         <a class="nav-link" href="${pageContext.request.contextPath}/vistas/login.jsp">
-                            <i class="bi bi-box-arrow-in-right"></i> Iniciar Sesión
+                            <i class="bi bi-box-arrow-in-right"></i> <fmt:message key="index.login" />
                         </a>
                     </li>
                 </ul>
@@ -246,16 +250,16 @@
     <!-- Sección Hero -->
     <section class="hero-section text-center">
         <div class="container">
-            <h1>Gestiona tus Citas Médicas de Forma Eficiente</h1>
-            <p class="lead">Un sistema moderno y fácil de usar para agendar y gestionar tus citas médicas</p>
+            <h1> <fmt:message key="index.header" /></h1>
+            <p class="lead"> <fmt:message key="index.lead " /></p>
             <div class="d-flex justify-content-center gap-4">
                 <a href="${pageContext.request.contextPath}/vistas/publico/solicitarCita.jsp" 
                    class="btn btn-primary btn-hero">
-                    <i class="bi bi-calendar-plus"></i> Agendar Cita
+                    <i class="bi bi-calendar-plus"></i> <fmt:message key="index.make" />
                 </a>
                 <a href="${pageContext.request.contextPath}/vistas/publico/consultaCitas.jsp" 
                    class="btn btn-outline-light btn-hero">
-                    <i class="bi bi-search"></i> Consultar Citas
+                    <i class="bi bi-search"></i> <fmt:message key="index.query" />
                 </a>
             </div>
         </div>
@@ -265,8 +269,8 @@
     <section class="feature-section">
         <div class="container">
             <div class="section-title">
-                <h2>Nuestros Servicios</h2>
-                <p>Ofrecemos una plataforma completa para la gestión de citas médicas</p>
+                <h2><fmt:message key="index.services.header" /> </h2>
+                <p><fmt:message key="index.services.paragraph" /></p>
             </div>
             <div class="row g-4">
                 <div class="col-md-4">
@@ -274,8 +278,8 @@
                         <div class="icon-circle">
                             <i class="bi bi-person-badge"></i>
                         </div>
-                        <h5>Especialistas Calificados</h5>
-                        <p>Contamos con médicos especialistas en diferentes áreas de la salud, garantizando la mejor atención para nuestros pacientes.</p>
+                        <h5><fmt:message key="index.services.cardone" /></h5>
+                        <p><fmt:message key="index.services.cardparagraph" /></p>
                     </div>
                 </div>
                 <div class="col-md-4">
@@ -283,8 +287,8 @@
                         <div class="icon-circle">
                             <i class="bi bi-clock"></i>
                         </div>
-                        <h5>Gestión de Horarios</h5>
-                        <p>Agenda tus citas en el horario que mejor te convenga, con disponibilidad en diferentes turnos y días de la semana.</p>
+                        <h5><fmt:message key="index.services.cardtwo" /></h5>
+                        <p><fmt:message key="index.services.cardtwoparagraph" /></p>
                     </div>
                 </div>
                 <div class="col-md-4">
@@ -292,8 +296,8 @@
                         <div class="icon-circle">
                             <i class="bi bi-calendar-check"></i>
                         </div>
-                        <h5>Seguimiento de Citas</h5>
-                        <p>Consulta y gestiona tus citas médicas en cualquier momento, con recordatorios y notificaciones automáticas.</p>
+                        <h5><fmt:message key="index.services.cardthree" /></h5>
+                        <p><fmt:message key="index.services.cardthreeparagraph" /></p>
                     </div>
                 </div>
             </div>
@@ -307,22 +311,22 @@
                 <div class="col-md-6">
                     <h5>Contacto</h5>
                     <p>
-                        <i class="bi bi-telephone"></i> (123) 456-7890<br>
-                        <i class="bi bi-envelope"></i> info@clinicamedica.com<br>
-                        <i class="bi bi-geo-alt"></i> Av. Principal 123, Ciudad
+                        <i class="bi bi-telephone"></i> <fmt:message key="index.footer.phone" /><br>
+                        <i class="bi bi-envelope"></i> <fmt:message key="index.footer.email" /> <br>
+                        <i class="bi bi-geo-alt"></i> <fmt:message key="index.footer.address" />
                     </p>
                 </div>
                 <div class="col-md-6 text-md-end">
                     <h5>Horario de Atención</h5>
                     <p>
-                        <i class="bi bi-clock"></i> Lunes a Viernes: 8:00 AM - 8:00 PM<br>
-                        <i class="bi bi-clock"></i> Sábados: 9:00 AM - 2:00 PM<br>
-                        <i class="bi bi-x-circle"></i> Domingos: Cerrado
+                        <i class="bi bi-clock"></i> <fmt:message key="index.footer.schedule" /><br>
+                        <i class="bi bi-clock"></i> <fmt:message key="index.footer.scheduleweekend" /><br>
+                        <i class="bi bi-x-circle"></i> <fmt:message key="index.footer.shcedulesunday" />
                     </p>
                 </div>
             </div>
             <div class="footer-bottom">
-                <p>&copy; 2024 Sistema de Gestión de Citas Médicas. Todos los derechos reservados.</p>
+                <p>&copy; <fmt:message key="index.footer.copyright" /> </p>
             </div>
         </div>
     </footer>
