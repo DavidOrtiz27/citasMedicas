@@ -1,9 +1,15 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
+<%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
+
 <!DOCTYPE html>
+
+<fmt:setLocale value="${param.lang != null ? param.lang : 'es'}" />
+<fmt:setBundle basename="messages" />
+
 <html lang="es">
 <head>
-    <title>Login - Sistema de Citas Médicas</title>
+    <title><fmt:message key="login.title"/></title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.7.2/font/bootstrap-icons.css" rel="stylesheet">
     <style>
@@ -134,8 +140,8 @@
     <div class="login-container">
         <div class="login-header">
             <i class="bi bi-hospital"></i>
-            <h2>Sistema de Citas Médicas</h2>
-            <p>Ingrese sus credenciales para continuar</p>
+            <h2><fmt:message key="login.systemName" /></h2>
+            <p><fmt:message key="login.instructions" /></p>
         </div>
         
         <c:if test="${not empty error}">
@@ -148,13 +154,13 @@
 
         <form action="${pageContext.request.contextPath}/login" method="post">
             <div class="form-floating">
-                <input type="text" class="form-control" id="username" name="username" placeholder="Usuario" required>
-                <label for="username"><i class="bi bi-person me-2"></i>Usuario</label>
+                <input type="text" class="form-control" id="username" name="username" placeholder="<fmt:message key='login.username' />" required>
+                <label for="username"><i class="bi bi-person me-2"></i><fmt:message key="login.username" /></label>
             </div>
             
             <div class="form-floating">
-                <input type="password" class="form-control" id="password" name="password" placeholder="Contraseña" required>
-                <label for="password"><i class="bi bi-lock me-2"></i>Contraseña</label>
+                <input type="password" class="form-control" id="password" name="password" placeholder="<fmt:message key='login.password' />" required>
+                <label for="password"><i class="bi bi-lock me-2"></i><fmt:message key="login.password" /></label>
             </div>
             
             <div class="captcha-container">
@@ -163,17 +169,18 @@
                      alt="CAPTCHA"
                      onclick="this.src='${pageContext.request.contextPath}/captcha?' + Math.random()">
                 <div class="form-floating">
-                    <input type="text" class="form-control" id="captcha" name="captcha" placeholder="Código CAPTCHA" required>
-                    <label for="captcha"><i class="bi bi-shield-lock me-2"></i>Código CAPTCHA</label>
+                    <input type="text" class="form-control" id="captcha" name="captcha" placeholder="<fmt:message key='login.captcha.label' />" required>
+                    <label for="captcha"><i class="bi bi-shield-lock me-2"></i><fmt:message key="login.captcha.label" /></label>
                 </div>
-                <small class="text-muted">Haga clic en la imagen para actualizar el código</small>
+                <small class="text-muted"><fmt:message key="login.captcha.refreshHint" /></small>
             </div>
             
             <button type="submit" class="btn btn-primary btn-login w-100">
-                <i class="bi bi-box-arrow-in-right me-2"></i>Iniciar Sesión
+                <i class="bi bi-box-arrow-in-right me-2"></i><fmt:message key="login.button" />
             </button>
         </form>
     </div>
+
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
