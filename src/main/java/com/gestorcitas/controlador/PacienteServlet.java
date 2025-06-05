@@ -55,7 +55,6 @@ public class PacienteServlet extends HttpServlet {
 				request.setAttribute("pacientes", pacientes);
 				request.getRequestDispatcher("/vistas/admin/paciente/pacientes.jsp").forward(request, response);
 
-
 			} else if (servletPath.equals("/admin/paciente/pacientes/nuevo")) {
 				request.getRequestDispatcher("/vistas/admin/paciente/nuevo.jsp").forward(request, response);
 
@@ -211,6 +210,8 @@ public class PacienteServlet extends HttpServlet {
 				response.sendRedirect(request.getContextPath() + "/admin/paciente/pacientes");
 				return;
 			}
+
+
 
 			// Intentar eliminar el paciente
 			boolean eliminado = pacienteDAO.eliminarPaciente(id);

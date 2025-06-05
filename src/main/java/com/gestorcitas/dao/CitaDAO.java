@@ -156,7 +156,7 @@ public class CitaDAO {
         }
     }
     
-    public boolean existeCitaEnHorario(Date fecha, String hora, int doctorId) throws SQLException {
+    public boolean existeCitaEnHorario(java.util.Date fecha, String hora, int doctorId) throws SQLException {
         String sql = "SELECT COUNT(*) FROM citas WHERE fecha = ? AND hora = ? AND doctor_id = ? " +
                     "AND estado != 'CANCELADA'";
                     

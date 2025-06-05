@@ -14,7 +14,11 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import com.gestorcitas.dao.CitaDAO;
+import com.gestorcitas.dao.DoctorDAO;
+import com.gestorcitas.dao.PacienteDAO;
 import com.gestorcitas.modelo.Cita;
+import com.gestorcitas.modelo.Doctor;
+import com.gestorcitas.modelo.Paciente;
 import com.gestorcitas.util.DocumentoUtil;
 import com.google.gson.Gson;
 import com.itextpdf.text.DocumentException;
@@ -23,11 +27,15 @@ import com.itextpdf.text.DocumentException;
 public class CitaServlet extends HttpServlet {
     private static final long serialVersionUID = 1L;
     private CitaDAO citaDAO;
+    private DoctorDAO doctorDAO;
+    private PacienteDAO pacienteDAO;
     private Gson gson;
 
     @Override
     public void init() throws ServletException {
         citaDAO = new CitaDAO();
+        doctorDAO = new DoctorDAO();
+        pacienteDAO = new PacienteDAO();
         gson = new Gson();
     }
 
@@ -35,12 +43,32 @@ public class CitaServlet extends HttpServlet {
     protected void doGet(HttpServletRequest request, HttpServletResponse response) 
             throws ServletException, IOException {
         String pathInfo = request.getPathInfo();
+        String accion = request.getParameter("accion");
         
         try {
+            if ("editar".equals(accion)) {
+                // Cargar datos para editar
+                int id = Integer.parseInt(request.getParameter("id"));
+                Cita cita = citaDAO.buscarPorId(id);
+                List<Doctor> doctores = doctorDAO.listarTodos();
+                List<Paciente> pacientes = pacienteDAO.listarTodos();
+                
+                request.setAttribute("cita", cita);
+                request.setAttribute("doctores", doctores);
+                request.setAttribute("pacientes", pacientes);
+                request.getRequestDispatcher("/vistas/admin/citas/editarCita.jsp").forward(request, response);
+                return;
+            }
+            
             if (pathInfo == null || pathInfo.equals("/")) {
                 // Listar todas las citas
                 List<Cita> citas = citaDAO.listarTodas();
+                List<Doctor> doctores = doctorDAO.listarTodos();
+                List<Paciente> pacientes = pacienteDAO.listarTodos();
+                
                 request.setAttribute("citas", citas);
+                request.setAttribute("doctores", doctores);
+                request.setAttribute("pacientes", pacientes);
                 request.getRequestDispatcher("/vistas/admin/citas/citas.jsp").forward(request, response);
             } else if (pathInfo != null && pathInfo.startsWith("/comprobante/")) {
                 // Generar comprobante PDF
@@ -66,20 +94,6 @@ public class CitaServlet extends HttpServlet {
                 List<Cita> citas = citaDAO.listarPorFecha(new java.sql.Date(inicio.getTime()), new java.sql.Date(fin.getTime()));
                 DocumentoUtil.generarReporteCitas(citas, response);
                 return;
-
-            
-            } else if (pathInfo.matches("/\\d+")) {
-                // Obtener una cita específica
-                int id = Integer.parseInt(pathInfo.substring(1));
-                obtenerCita(id, response);
-            } else if (pathInfo.equals("/paciente/paciente")) {
-                // Listar citas por paciente
-                int pacienteId = Integer.parseInt(request.getParameter("id"));
-                listarCitasPorPaciente(pacienteId, response);
-            } else if (pathInfo.equals("/doctor")) {
-                // Listar citas por doctor
-                int doctorId = Integer.parseInt(request.getParameter("id"));
-                listarCitasPorDoctor(doctorId, response);
             } else {
                 response.sendError(HttpServletResponse.SC_NOT_FOUND);
             }
@@ -96,19 +110,14 @@ public class CitaServlet extends HttpServlet {
         String accion = request.getParameter("accion");
         
         try {
-            switch (accion) {
-                case "crear":
-                    crearCita(request, response);
-                    break;
-                case "actualizar":
-                    actualizarCita(request, response);
-                    break;
-                case "eliminar":
-                    eliminarCita(request, response);
-                    break;
-                case "actualizarEstado":
-                default:
-                    response.sendRedirect(request.getContextPath() + "/admin/citas/citas");
+            if ("crear".equals(accion)) {
+                crearCita(request, response);
+            } else if ("actualizar".equals(accion)) {
+                actualizarCita(request, response);
+            } else if ("eliminar".equals(accion)) {
+                eliminarCita(request, response);
+            } else {
+                response.sendRedirect(request.getContextPath() + "/admin/citas/citas");
             }
         } catch (SQLException e) {
             e.printStackTrace();
@@ -117,97 +126,17 @@ public class CitaServlet extends HttpServlet {
         }
     }
 
-    @Override
-    protected void doPut(HttpServletRequest request, HttpServletResponse response) 
-            throws ServletException, IOException {
-        String pathInfo = request.getPathInfo();
-        
-        if (pathInfo == null || !pathInfo.matches("/\\d+/estado")) {
-            response.sendError(HttpServletResponse.SC_BAD_REQUEST);
-            return;
-        }
-
-        try {
-            int id = Integer.parseInt(pathInfo.substring(1, pathInfo.length() - 6));
-            String estado = request.getParameter("estado");
-            
-            if (estado == null || !estado.matches("PENDIENTE|CONFIRMADA|CANCELADA")) {
-                response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Estado no válido");
-                return;
-            }
-            
-            citaDAO.actualizarEstado(id, estado);
-            response.setStatus(HttpServletResponse.SC_OK);
-            
-            Cita cita = citaDAO.buscarPorId(id);
-            response.getWriter().write(gson.toJson(cita));
-        } catch (Exception e) {
-            e.printStackTrace();
-            response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Error al actualizar el estado de la cita");
-        }
-    }
-
-    @Override
-    protected void doDelete(HttpServletRequest request, HttpServletResponse response) 
-            throws ServletException, IOException {
-        String pathInfo = request.getPathInfo();
-        
-        if (pathInfo == null || !pathInfo.matches("/\\d+")) {
-            response.sendError(HttpServletResponse.SC_BAD_REQUEST);
-            return;
-        }
-
-        try {
-            int id = Integer.parseInt(pathInfo.substring(1));
-            citaDAO.eliminar(id);
-            response.setStatus(HttpServletResponse.SC_NO_CONTENT);
-        } catch (Exception e) {
-            e.printStackTrace();
-            response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Error al eliminar la cita");
-        }
-    }
-
-    private void obtenerCita(int id, HttpServletResponse response) throws IOException {
-        try {
-            Cita cita = citaDAO.buscarPorId(id);
-            if (cita != null) {
-                response.setContentType("application/json");
-                response.getWriter().write(gson.toJson(cita));
-            } else {
-                response.sendError(HttpServletResponse.SC_NOT_FOUND);
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-            response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Error al obtener la cita");
-        }
-    }
-
-    private void listarCitasPorPaciente(int pacienteId, HttpServletResponse response) throws IOException {
-        try {
-            List<Cita> citas = citaDAO.listarPorPaciente(pacienteId);
-            response.setContentType("application/json");
-            response.getWriter().write(gson.toJson(citas));
-        } catch (Exception e) {
-            e.printStackTrace();
-            response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Error al listar las citas del paciente");
-        }
-    }
-
-    private void listarCitasPorDoctor(int doctorId, HttpServletResponse response) throws IOException {
-        try {
-            List<Cita> citas = citaDAO.listarPorDoctor(doctorId);
-            response.setContentType("application/json");
-            response.getWriter().write(gson.toJson(citas));
-        } catch (Exception e) {
-            e.printStackTrace();
-            response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Error al listar las citas del doctor");
-        }
-    }
-
     private void crearCita(HttpServletRequest request, HttpServletResponse response) 
             throws SQLException, ServletException, IOException {
         Cita cita = new Cita();
         mapearCita(request, cita);
+        
+        // Verificar disponibilidad del horario
+        if (citaDAO.existeCitaEnHorario(cita.getFecha(), cita.getHora(), cita.getDoctor().getId())) {
+            request.setAttribute("error", "El horario seleccionado no está disponible");
+            request.getRequestDispatcher("/vistas/admin/citas/citas.jsp").forward(request, response);
+            return;
+        }
         
         citaDAO.crear(cita);
         response.sendRedirect(request.getContextPath() + "/admin/citas/citas");
@@ -233,11 +162,27 @@ public class CitaServlet extends HttpServlet {
     
     private void mapearCita(HttpServletRequest request, Cita cita) {
         try {
-            SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm");
-            cita.setFecha(sdf.parse(request.getParameter("fecha")));
+            // Mapear fecha y hora
+            String fechaStr = request.getParameter("fecha");
+            String horaStr = request.getParameter("hora");
+            SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
+            cita.setFecha(sdf.parse(fechaStr));
+            cita.setHora(horaStr);
+            
+            // Mapear paciente
+            int pacienteId = Integer.parseInt(request.getParameter("paciente"));
+            Paciente paciente = new Paciente();
+            paciente.setId(pacienteId);
+            cita.setPaciente(paciente);
+            
+            // Mapear doctor
+            int doctorId = Integer.parseInt(request.getParameter("doctor"));
+            Doctor doctor = new Doctor();
+            doctor.setId(doctorId);
+            cita.setDoctor(doctor);
+            
+            // Mapear estado
             cita.setEstado(request.getParameter("estado"));
-            // Aquí se deberían mapear también el doctor y el paciente
-            // usando sus respectivos DAOs
         } catch (ParseException e) {
             e.printStackTrace();
         }

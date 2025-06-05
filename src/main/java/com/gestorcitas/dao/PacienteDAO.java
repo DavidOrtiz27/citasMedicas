@@ -269,4 +269,27 @@ public class PacienteDAO {
         }
         return 0;
     }
+
+    public List<Paciente> listarTodos() throws SQLException {
+        List<Paciente> pacientes = new ArrayList<>();
+        String sql = "SELECT * FROM pacientes ORDER BY apellidos, nombres";
+        
+        try (Connection conn = DatabaseUtil.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql);
+             ResultSet rs = stmt.executeQuery()) {
+            
+            while (rs.next()) {
+                Paciente paciente = new Paciente();
+                paciente.setId(rs.getInt("id"));
+                paciente.setNombres(rs.getString("nombres"));
+                paciente.setApellidos(rs.getString("apellidos"));
+                paciente.setDni(rs.getString("dni"));
+                paciente.setTelefono(rs.getString("telefono"));
+                paciente.setEmail(rs.getString("email"));
+                pacientes.add(paciente);
+            }
+        }
+        
+        return pacientes;
+    }
 } 

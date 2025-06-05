@@ -54,39 +54,6 @@ public class DoctorDAO {
         return doctores;
     }
     
-    public Doctor obtenerPorId(int id) throws SQLException {
-        String sql = "SELECT d.*, e.id as especialidad_id, e.nombre as especialidad_nombre, e.descripcion as especialidad_descripcion " +
-                    "FROM doctores d " +
-                    "LEFT JOIN especialidades e ON d.especialidad_id = e.id " +
-                    "WHERE d.id = ?";
-        
-        try (Connection conn = DatabaseUtil.getConnection();
-             PreparedStatement stmt = conn.prepareStatement(sql)) {
-            
-            stmt.setInt(1, id);
-            
-            try (ResultSet rs = stmt.executeQuery()) {
-                if (rs.next()) {
-                    Doctor doctor = new Doctor();
-                    doctor.setId(rs.getInt("id"));
-                    doctor.setNombres(rs.getString("nombres"));
-                    doctor.setApellidos(rs.getString("apellidos"));
-                    
-                    Especialidad especialidad = new Especialidad();
-                    especialidad.setId(rs.getInt("especialidad_id"));
-                    especialidad.setNombre(rs.getString("especialidad_nombre"));
-                    especialidad.setDescripcion(rs.getString("especialidad_descripcion"));
-                    doctor.setEspecialidad(especialidad);
-                    
-                    doctor.setEmail(rs.getString("email"));
-                    doctor.setTelefono(rs.getString("telefono"));
-                    return doctor;
-                }
-            }
-        }
-        return null;
-    }
-    
     public boolean guardar(Doctor doctor) throws SQLException {
         String sql;
         if (doctor.getId() == 0) {
@@ -138,22 +105,67 @@ public class DoctorDAO {
         }
         return 0;
     }
-    
-    public boolean existeDNI(String dni, Integer idExcluir) throws SQLException {
-        String sql = "SELECT COUNT(*) FROM doctores WHERE dni = ? AND id != ?";
-        
+
+
+    public List<Doctor> buscarDoctores(String buscar)  throws SQLException {
+        List<Doctor> doctores = new ArrayList<>();
+        String sql = "SELECT d.*, e.id as especialidad_id, e.nombre as especialidad_nombre, e.descripcion as especialidad_descripcion " +
+                    "FROM doctores d " +
+                    "LEFT JOIN especialidades e ON d.especialidad_id = e.id " +
+                    "WHERE d.nombres LIKE ? OR d.apellidos LIKE ?";
+
         try (Connection conn = DatabaseUtil.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
-            
-            stmt.setString(1, dni);
-            stmt.setObject(2, idExcluir);
-            
+
+            String terminoBusqueda = "%" + buscar + "%";
+            stmt.setString(1, terminoBusqueda);
+            stmt.setString(2, terminoBusqueda);
+
             try (ResultSet rs = stmt.executeQuery()) {
-                if (rs.next()) {
-                    return rs.getInt(1) > 0;
+                while (rs.next()) {
+                    Doctor doctor = new Doctor();
+                    doctor.setId(rs.getInt("id"));
+                    doctor.setNombres(rs.getString("nombres"));
+                    doctor.setApellidos(rs.getString("apellidos"));
+
+                    Especialidad especialidad = new Especialidad();
+                    especialidad.setId(rs.getInt("especialidad_id"));
+                    especialidad.setNombre(rs.getString("especialidad_nombre"));
+                    especialidad.setDescripcion(rs.getString("especialidad_descripcion"));
+                    doctor.setEspecialidad(especialidad);
+                    doctores.add(doctor);
                 }
             }
         }
-        return false;
+        return doctores;
     }
-} 
+
+    public List<Doctor> listarDoctores() throws SQLException {
+        List<Doctor> doctores = new ArrayList<>();
+        String sql = "SELECT d.*, e.id as especialidad_id, e.nombre as especialidad_nombre, e.descripcion as especialidad_descripcion " +
+                    "FROM doctores d " +
+                    "LEFT JOIN especialidades e ON d.especialidad_id = e.id " +
+                    "ORDER BY d.apellidos, d.nombres";
+
+        try (Connection conn = DatabaseUtil.getConnection();
+             Statement stmt = conn.createStatement();
+             ResultSet rs = stmt.executeQuery(sql)) {
+
+            while (rs.next()) {
+                Doctor doctor = new Doctor();
+                doctor.setId(rs.getInt("id"));
+                doctor.setNombres(rs.getString("nombres"));
+                doctor.setApellidos(rs.getString("apellidos"));
+
+                Especialidad especialidad = new Especialidad();
+                especialidad.setId(rs.getInt("especialidad_id"));
+                especialidad.setNombre(rs.getString("especialidad_nombre"));
+                especialidad.setDescripcion(rs.getString("especialidad_descripcion"));
+                doctor.setEspecialidad(especialidad);
+
+                doctores.add(doctor);
+            }
+        }
+        return doctores;
+    }
+}

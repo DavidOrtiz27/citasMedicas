@@ -318,9 +318,9 @@
                                             </td>
                                             <td>
                                                 <div class="btn-group">
-                                                    <button class="btn btn-sm btn-primary btn-action" onclick="editarCita('${cita.id}')">
+                                                    <a href="${pageContext.request.contextPath}/admin/citas/citas?accion=editar&id=${cita.id}" class="btn btn-sm btn-primary btn-action">
                                                         <i class="bi bi-pencil"></i>
-                                                    </button>
+                                                    </a>
                                                     <button class="btn btn-sm btn-danger btn-action" onclick="eliminarCita('${cita.id}')">
                                                         <i class="bi bi-trash"></i>
                                                     </button>
@@ -346,16 +346,18 @@
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body">
-                    <form id="citaForm" class="needs-validation" novalidate>
-                        <input type="hidden" id="citaId">
+                    <form id="citaForm" action="${pageContext.request.contextPath}/admin/citas/citas" method="post" class="needs-validation" novalidate>
+                        <input type="hidden" name="accion" value="crear">
+                        
+                        <div class="mb-3">
+                            <label for="buscarPaciente" class="form-label required-field">Buscar Paciente</label>
+                            <input type="text" class="form-control" id="buscarPaciente" placeholder="Ingrese nombre, apellido o DNI del paciente">
+                        </div>
                         
                         <div class="mb-3">
                             <label for="paciente" class="form-label required-field">Paciente</label>
-                            <select class="form-select" id="paciente" required>
+                            <select class="form-select" id="paciente" name="paciente" required>
                                 <option value="">Seleccione un paciente</option>
-                                <c:forEach items="${pacientes}" var="paciente">
-                                    <option value="${paciente.id}">${paciente.nombres} ${paciente.apellidos}</option>
-                                </c:forEach>
                             </select>
                             <div class="invalid-feedback">
                                 Por favor seleccione un paciente.
@@ -363,12 +365,19 @@
                         </div>
                         
                         <div class="mb-3">
+                            <label for="especialidad" class="form-label required-field">Especialidad</label>
+                            <select class="form-select" id="especialidad" required>
+                                <option value="">Seleccione una especialidad</option>
+                            </select>
+                            <div class="invalid-feedback">
+                                Por favor seleccione una especialidad.
+                            </div>
+                        </div>
+                        
+                        <div class="mb-3">
                             <label for="doctor" class="form-label required-field">Doctor</label>
-                            <select class="form-select" id="doctor" required>
+                            <select class="form-select" id="doctor" name="doctor" required>
                                 <option value="">Seleccione un doctor</option>
-                                <c:forEach items="${doctores}" var="doctor">
-                                    <option value="${doctor.id}">${doctor.nombres} ${doctor.apellidos} - ${doctor.especialidad.nombre}</option>
-                                </c:forEach>
                             </select>
                             <div class="invalid-feedback">
                                 Por favor seleccione un doctor.
@@ -377,7 +386,7 @@
                         
                         <div class="mb-3">
                             <label for="fecha" class="form-label required-field">Fecha</label>
-                            <input type="date" class="form-control" id="fecha" required>
+                            <input type="date" class="form-control" id="fecha" name="fecha" required>
                             <div class="invalid-feedback">
                                 Por favor seleccione una fecha.
                             </div>
@@ -385,7 +394,7 @@
                         
                         <div class="mb-3">
                             <label for="hora" class="form-label required-field">Hora</label>
-                            <input type="time" class="form-control" id="hora" required>
+                            <input type="time" class="form-control" id="hora" name="hora" required>
                             <div class="invalid-feedback">
                                 Por favor seleccione una hora.
                             </div>
@@ -393,7 +402,7 @@
                         
                         <div class="mb-3">
                             <label for="estado" class="form-label required-field">Estado</label>
-                            <select class="form-select" id="estado" required>
+                            <select class="form-select" id="estado" name="estado" required>
                                 <option value="PENDIENTE">Pendiente</option>
                                 <option value="CONFIRMADA">Confirmada</option>
                                 <option value="CANCELADA">Cancelada</option>
@@ -402,102 +411,117 @@
                                 Por favor seleccione un estado.
                             </div>
                         </div>
+                        
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                            <button type="submit" class="btn btn-primary">Guardar</button>
+                        </div>
                     </form>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-                    <button type="button" class="btn btn-primary" onclick="guardarCita()">Guardar</button>
                 </div>
             </div>
         </div>
     </div>
 
+    <!-- Formulario para eliminar cita -->
+    <form id="eliminarForm" action="${pageContext.request.contextPath}/admin/citas/citas" method="post" style="display: none;">
+        <input type="hidden" name="accion" value="eliminar">
+        <input type="hidden" name="id" id="eliminarId">
+    </form>
+
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script>
-        // Función para editar cita
-        function editarCita(id) {
-            fetch('${pageContext.request.contextPath}/admin/citas/' + id)
-                .then(response => response.json())
-                .then(cita => {
-                    document.getElementById('citaId').value = cita.id;
-                    document.getElementById('paciente').value = cita.paciente.id;
-                    document.getElementById('doctor').value = cita.doctor.id;
-                    document.getElementById('fecha').value = cita.fecha;
-                    document.getElementById('hora').value = cita.hora;
-                    document.getElementById('estado').value = cita.estado;
-                    
-                    document.getElementById('citaModalLabel').textContent = 'Editar Cita';
-                    new bootstrap.Modal(document.getElementById('citaModal')).show();
-                })
-                .catch(error => {
-                    console.error('Error:', error);
-                    alert('Error al cargar los datos de la cita');
-                });
-        }
-
         // Función para eliminar cita
         function eliminarCita(id) {
             if (confirm('¿Está seguro de eliminar esta cita?')) {
-                fetch('${pageContext.request.contextPath}/admin/citas/' + id, {
-                    method: 'DELETE'
-                })
-                .then(response => {
-                    if (response.ok) {
-                        window.location.reload();
-                    } else {
-                        throw new Error('Error al eliminar la cita');
-                    }
+                document.getElementById('eliminarId').value = id;
+                document.getElementById('eliminarForm').submit();
+            }
+        }
+
+        // Establecer fecha mínima como hoy
+        document.getElementById('fecha').min = new Date().toISOString().split('T')[0];
+
+        // Función para cargar los doctores de una especialidad
+        function cargarDoctores(especialidadId) {
+            const doctorSelect = document.getElementById('doctor');
+            doctorSelect.innerHTML = '<option value="">Seleccione un doctor</option>';
+            
+            if (!especialidadId) return;
+
+            fetch('${pageContext.request.contextPath}/admin/doctor/doctores?especialidad=' + especialidadId)
+                .then(response => response.json())
+                .then(doctores => {
+                    doctores.forEach(doctor => {
+                        const option = document.createElement('option');
+                        option.value = doctor.id;
+                        option.textContent = `${doctor.nombres} ${doctor.apellidos} - ${doctor.especialidad.nombre}`;
+                        doctorSelect.appendChild(option);
+                    });
                 })
                 .catch(error => {
                     console.error('Error:', error);
-                    alert('Error al eliminar la cita');
+                    alert('Error al cargar los doctores');
                 });
-            }
         }
 
-        // Función para guardar cita
-        function guardarCita() {
-            const form = document.getElementById('citaForm');
-            if (!form.checkValidity()) {
-                form.classList.add('was-validated');
-                return;
-            }
+        // Función para cargar las especialidades
+        function cargarEspecialidades() {
+            const especialidadSelect = document.getElementById('especialidad');
+            especialidadSelect.innerHTML = '<option value="">Seleccione una especialidad</option>';
 
-            const citaData = {
-                id: document.getElementById('citaId').value,
-                paciente: {
-                    id: document.getElementById('paciente').value
-                },
-                doctor: {
-                    id: document.getElementById('doctor').value
-                },
-                fecha: document.getElementById('fecha').value,
-                hora: document.getElementById('hora').value,
-                estado: document.getElementById('estado').value
-            };
-
-            const method = citaData.id ? 'PUT' : 'POST';
-            const url = '${pageContext.request.contextPath}/admin/citas' + (citaData.id ? '/' + citaData.id : '');
-
-            fetch(url, {
-                method: method,
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify(citaData)
-            })
-            .then(response => {
-                if (response.ok) {
-                    window.location.reload();
-                } else {
-                    throw new Error('Error al guardar la cita');
-                }
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                alert('Error al guardar la cita');
-            });
+            fetch('${pageContext.request.contextPath}/admin/especialidad/especialidades')
+                .then(response => response.json())
+                .then(especialidades => {
+                    especialidades.forEach(especialidad => {
+                        const option = document.createElement('option');
+                        option.value = especialidad.id;
+                        option.textContent = especialidad.nombre;
+                        especialidadSelect.appendChild(option);
+                    });
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('Error al cargar las especialidades');
+                });
         }
+
+        // Función para buscar pacientes
+        function buscarPacientes(termino) {
+            const pacienteSelect = document.getElementById('paciente');
+            pacienteSelect.innerHTML = '<option value="">Seleccione un paciente</option>';
+            
+            if (!termino) return;
+
+            fetch('${pageContext.request.contextPath}/admin/paciente/pacientes?buscar=' + termino)
+                .then(response => response.json())
+                .then(pacientes => {
+                    pacientes.forEach(paciente => {
+                        const option = document.createElement('option');
+                        option.value = paciente.id;
+                        option.textContent = `${paciente.nombres} ${paciente.apellidos}`;
+                        pacienteSelect.appendChild(option);
+                    });
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('Error al buscar pacientes');
+                });
+        }
+
+        // Cargar especialidades al abrir el modal
+        document.getElementById('citaModal').addEventListener('show.bs.modal', function () {
+            cargarEspecialidades();
+        });
+
+        // Evento para buscar pacientes
+        document.getElementById('buscarPaciente').addEventListener('input', function(e) {
+            buscarPacientes(e.target.value);
+        });
+
+        // Evento para cargar doctores cuando se selecciona una especialidad
+        document.getElementById('especialidad').addEventListener('change', function(e) {
+            cargarDoctores(e.target.value);
+        });
     </script>
 </body>
 </html>

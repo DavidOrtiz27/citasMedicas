@@ -309,7 +309,7 @@
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body">
-                    <form id="doctorForm">
+                    <form action="${pageContext.request.contextPath}/admin/doctor/doctores/agregar" id="doctorForm">
                         <input type="hidden" id="doctorId">
                         <div class="mb-3">
                             <label for="nombres" class="form-label">Nombres</label>
@@ -322,94 +322,24 @@
                         <div class="mb-3">
                             <label for="especialidad" class="form-label">Especialidad</label>
                             <select class="form-select" id="especialidad" required>
-                                <!-- Opciones cargadas dinámicamente -->
+                                <option value="" disabled selected>Seleccione una especialidad</option>
+                                <c:forEach items="${especialidades}" var="especialidad">
+                                    <option value="${especialidad.id}">${especialidad.nombre}</option>
+                                </c:forEach>
                             </select>
                         </div>
                     </form>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-                    <button type="button" class="btn btn-primary" id="saveDoctor">Guardar</button>
+                    <button type="submit" class="btn btn-primary" id="saveDoctor">Guardar</button>
                 </div>
             </div>
         </div>
     </div>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script>
-        // Cargar especialidades para el modal
-        function loadEspecialidades() {
-            fetch('${pageContext.request.contextPath}/admin/especialidades')
-                .then(response => response.json())
-                .then(especialidades => {
-                    const select = document.getElementById('especialidad');
-                    select.innerHTML = '<option value="">Seleccione una especialidad</option>';
-                    especialidades.forEach(esp => {
-                        select.innerHTML += `<option value="${esp.id}">${esp.nombre}</option>`;
-                    });
-                })
-                .catch(error => console.error('Error:', error));
-        }
-        // Guardar doctor (crear o actualizar)
-        document.getElementById('saveDoctor').addEventListener('click', function() {
-            const doctor = {
-                id: document.getElementById('doctorId').value || 0,
-                nombres: document.getElementById('nombres').value,
-                apellidos: document.getElementById('apellidos').value,
-                especialidad: {
-                    id: document.getElementById('especialidad').value
-                }
-            };
-            const method = doctor.id ? 'PUT' : 'POST';
-            const url = '${pageContext.request.contextPath}/admin/doctores' + (doctor.id ? '/' + doctor.id : '');
-            fetch(url, {
-                method: method,
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify(doctor)
-            })
-            .then(response => {
-                if (response.ok) {
-                    bootstrap.Modal.getInstance(document.getElementById('doctorModal')).hide();
-                    location.reload();
-                } else {
-                    throw new Error('Error al guardar el doctor');
-                }
-            })
-            .catch(error => console.error('Error:', error));
-        });
-        // Editar doctor
-        function editDoctor(id) {
-            fetch('${pageContext.request.contextPath}/admin/doctores/' + id)
-                .then(response => response.json())
-                .then(doctor => {
-                    document.getElementById('doctorId').value = doctor.id;
-                    document.getElementById('nombres').value = doctor.nombres;
-                    document.getElementById('apellidos').value = doctor.apellidos;
-                    document.getElementById('especialidad').value = doctor.especialidad.id;
-                    document.getElementById('modalTitle').textContent = 'Editar Doctor';
-                    new bootstrap.Modal(document.getElementById('doctorModal')).show();
-                })
-                .catch(error => console.error('Error:', error));
-        }
-        // Eliminar doctor
-        function deleteDoctor(id) {
-            if (confirm('¿Está seguro de eliminar este doctor?')) {
-                fetch('${pageContext.request.contextPath}/admin/doctores/' + id, {
-                    method: 'DELETE'
-                })
-                .then(response => {
-                    if (response.ok) {
-                        location.reload();
-                    } else {
-                        throw new Error('Error al eliminar el doctor');
-                    }
-                })
-                .catch(error => console.error('Error:', error));
-            }
-        }
-        // Cargar especialidades al abrir el modal
-        document.getElementById('doctorModal').addEventListener('show.bs.modal', loadEspecialidades);
+
         // Búsqueda en la tabla (solo frontend)
         document.getElementById('searchButton').addEventListener('click', function() {
             const searchTerm = document.getElementById('searchInput').value.toLowerCase();
