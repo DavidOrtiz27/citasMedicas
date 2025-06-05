@@ -134,41 +134,62 @@
 </head>
 <body>
     <!-- Sidebar -->
-    <div class="sidebar">
-        <div class="text-center mb-4">
-            <h4 class="text-white">Sistema de Citas</h4>
+    <nav class="col-md-3 col-lg-2 d-md-block sidebar">
+        <div class="position-sticky">
+            <div class="text-center py-4">
+                <h4 class="text-white">Sistema de Citas</h4>
+                <p class="text-light opacity-75">Panel de Administración</p>
+            </div>
+            
+            <ul class="nav flex-column px-3">
+                <li class="nav-item">
+                    <a class="nav-link" href="${pageContext.request.contextPath}/admin/inicio">
+                        <i class="bi bi-house"></i>
+                        Inicio
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="${pageContext.request.contextPath}/admin/paciente/pacientes">
+                        <i class="bi bi-people"></i>
+                        Pacientes
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="${pageContext.request.contextPath}/admin/doctor/doctores">
+                        <i class="bi bi-person-badge"></i>
+                        Doctores
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link active" href="${pageContext.request.contextPath}/admin/citas/citas">
+                        <i class="bi bi-calendar-check"></i>
+                        Citas
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="${pageContext.request.contextPath}/admin/especialidad/especialidades">
+                        <i class="bi bi-list-check"></i>
+                        Especialidades
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="${pageContext.request.contextPath}/admin/horario/horarios">
+                        <i class="bi bi-clock"></i>
+                        Horarios
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="${pageContext.request.contextPath}/admin/usuario/usuarios">
+                        <i class="bi bi-person-gear"></i>
+                        Usuarios
+                    </a>
+                </li>
+            </ul>
         </div>
-        <ul class="nav flex-column">
-            <li class="nav-item">
-                <a class="nav-link" href="${pageContext.request.contextPath}/admin/dashboard">
-                    <i class="bi bi-house-door"></i> Dashboard
-                </a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link active" href="${pageContext.request.contextPath}/admin/citas/citas">
-                    <i class="bi bi-calendar-check"></i> Citas
-                </a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link" href="${pageContext.request.contextPath}/admin/pacientes">
-                    <i class="bi bi-people"></i> Pacientes
-                </a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link" href="${pageContext.request.contextPath}/admin/doctores">
-                    <i class="bi bi-person-badge"></i> Doctores
-                </a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link" href="${pageContext.request.contextPath}/admin/especialidades">
-                    <i class="bi bi-list-check"></i> Especialidades
-                </a>
-            </li>
-        </ul>
-    </div>
+    </nav>
 
     <!-- Contenido principal -->
-    <div class="main-content">
+    <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4 py-4">
         <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
             <h1 class="h2">Gestión de Citas</h1>
             <div class="btn-toolbar mb-2 mb-md-0">
@@ -234,12 +255,12 @@
                                         </a>
                                         <c:if test="${cita.estado != 'CANCELADA'}">
                                             <button type="button" class="btn btn-sm btn-warning" 
-                                                    onclick="mostrarModalCancelar(${cita.id})" title="Cancelar">
+                                                    onclick="mostrarModalCancelar('${cita.id}')" title="Cancelar">
                                                 <i class="bi bi-x-circle"></i>
                                             </button>
                                         </c:if>
                                         <button type="button" class="btn btn-sm btn-danger" 
-                                                onclick="confirmarEliminar(${cita.id})" title="Eliminar">
+                                                onclick="eliminarCita('${cita.id}')" title="Eliminar">
                                             <i class="bi bi-trash"></i>
                                         </button>
                                     </div>
@@ -250,7 +271,7 @@
                 </table>
             </div>
         </div>
-    </div>
+    </main>
 
     <!-- Modal de Cancelación -->
     <div class="modal fade" id="modalCancelar" tabindex="-1">
@@ -314,14 +335,6 @@
                         exportOptions: {
                             columns: [0, 1, 2, 3, 4, 5, 6]
                         }
-                    },
-                    {
-                        extend: 'print',
-                        text: '<i class="bi bi-printer"></i> Imprimir',
-                        className: 'btn btn-info',
-                        exportOptions: {
-                            columns: [0, 1, 2, 3, 4, 5, 6]
-                        }
                     }
                 ],
                 order: [[1, 'desc'], [2, 'asc']],
@@ -335,38 +348,67 @@
             $('#modalCancelar').modal('show');
         }
 
-        function confirmarEliminar(id) {
-            Swal.fire({
-                title: '¿Estás seguro?',
-                text: "Esta acción no se puede deshacer",
-                icon: 'warning',
-                showCancelButton: true,
-                confirmButtonColor: '#d33',
-                cancelButtonColor: '#3085d6',
-                confirmButtonText: 'Sí, eliminar',
-                cancelButtonText: 'Cancelar'
-            }).then((result) => {
+        // Función para eliminar cita
+        async function eliminarCita(id) {
+            try {
+                const result = await Swal.fire({
+                    title: '¿Estás seguro?',
+                    text: "Esta acción no se puede deshacer",
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonColor: '#3085d6',
+                    cancelButtonColor: '#d33',
+                    confirmButtonText: 'Sí, eliminar',
+                    cancelButtonText: 'Cancelar'
+                });
+
                 if (result.isConfirmed) {
-                    const form = document.createElement('form');
-                    form.method = 'POST';
-                    form.action = '${pageContext.request.contextPath}/admin/citas/citas';
-                    
-                    const accionInput = document.createElement('input');
-                    accionInput.type = 'hidden';
-                    accionInput.name = 'accion';
-                    accionInput.value = 'eliminar';
-                    
-                    const idInput = document.createElement('input');
-                    idInput.type = 'hidden';
-                    idInput.name = 'id';
-                    idInput.value = id;
-                    
-                    form.appendChild(accionInput);
-                    form.appendChild(idInput);
-                    document.body.appendChild(form);
-                    form.submit();
+                    const formData = new URLSearchParams();
+                    formData.append('accion', 'eliminar');
+                    formData.append('id', id);
+
+                    const response = await fetch('${pageContext.request.contextPath}/admin/citas/citas', {
+                        method: 'POST',
+                        body: formData,
+                        headers: {
+                            'Content-Type': 'application/x-www-form-urlencoded'
+                        }
+                    });
+
+                    // Si la respuesta es una redirección, seguirla
+                    if (response.redirected) {
+                        window.location.href = response.url;
+                        return;
+                    }
+
+                    const text = await response.text();
+                    let result;
+                    try {
+                        result = JSON.parse(text);
+                        if (result.success) {
+                            await Swal.fire({
+                                icon: 'success',
+                                title: 'Éxito',
+                                text: result.message || 'Cita eliminada correctamente',
+                                showConfirmButton: false,
+                                timer: 1500
+                            });
+                            window.location.reload();
+                        } else {
+                            throw new Error(result.message || 'Error al eliminar la cita');
+                        }
+                    } catch (e) {
+                        throw new Error('Error al procesar la respuesta del servidor');
+                    }
                 }
-            });
+            } catch (error) {
+                console.error('Error:', error);
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: error.message || 'Error al eliminar la cita'
+                });
+            }
         }
     </script>
 </body>
