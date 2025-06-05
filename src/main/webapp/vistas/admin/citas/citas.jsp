@@ -1,50 +1,50 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
+
 <!DOCTYPE html>
-<html lang="es">
+<html>
 <head>
-    <title>Gestión de Citas - Sistema de Citas Médicas</title>
+    <meta charset="UTF-8">
+    <title>Gestión de Citas</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.7.2/font/bootstrap-icons.css" rel="stylesheet">
+    <link href="https://cdn.datatables.net/1.13.7/css/dataTables.bootstrap5.min.css" rel="stylesheet">
+    <link href="https://cdn.datatables.net/buttons/2.4.2/css/buttons.bootstrap5.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/sweetalert2@11.7.32/dist/sweetalert2.min.css" rel="stylesheet">
     <style>
-        :root {
-            --primary-color: #2c3e50;
-            --secondary-color: #34495e;
-            --accent-color: #3498db;
-            --success-color: #2ecc71;
-            --warning-color: #f1c40f;
-            --danger-color: #e74c3c;
-            --light-color: #ecf0f1;
-        }
-
         body {
             background-color: #f8f9fa;
+            min-height: 100vh;
         }
 
         .sidebar {
-            background: var(--primary-color);
+            background: #2c3e50;
             min-height: 100vh;
-            box-shadow: 2px 0 5px rgba(0,0,0,0.1);
-            transition: all 0.3s;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 250px;
+            z-index: 100;
+            padding-top: 20px;
         }
 
         .sidebar .nav-link {
-            color: var(--light-color);
+            color: #ecf0f1;
             padding: 0.8rem 1rem;
-            margin: 0.2rem 0;
+            margin: 0.2rem 1rem;
             border-radius: 0.5rem;
             transition: all 0.3s;
         }
 
         .sidebar .nav-link:hover {
-            background: var(--secondary-color);
+            background: #34495e;
             color: white;
             transform: translateX(5px);
         }
 
         .sidebar .nav-link.active {
-            background: var(--accent-color);
+            background: #3498db;
             color: white;
         }
 
@@ -52,476 +52,322 @@
             margin-right: 0.5rem;
         }
 
+        .main-content {
+            margin-left: 250px;
+            padding: 20px;
+        }
+
         .card {
             border: none;
             border-radius: 1rem;
             box-shadow: 0 0.5rem 1rem rgba(0,0,0,0.1);
-            transition: transform 0.3s;
         }
 
-        .card:hover {
-            transform: translateY(-5px);
+        .btn-primary {
+            background-color: #3498db;
+            border-color: #3498db;
         }
 
-        .table {
-            border-radius: 0.5rem;
-            overflow: hidden;
+        .btn-primary:hover {
+            background-color: #2980b9;
+            border-color: #2980b9;
         }
 
-        .table thead {
-            background: var(--primary-color);
-            color: white;
+        .btn-secondary {
+            background-color: #95a5a6;
+            border-color: #95a5a6;
         }
 
-        .btn-action {
-            padding: 0.5rem 1rem;
-            border-radius: 0.5rem;
-            transition: all 0.3s;
+        .btn-secondary:hover {
+            background-color: #7f8c8d;
+            border-color: #7f8c8d;
         }
 
-        .btn-action:hover {
-            transform: translateY(-2px);
-        }
-
-        .modal-content {
-            border-radius: 1rem;
-            border: none;
-        }
-
-        .modal-header {
-            background: var(--primary-color);
-            color: white;
-            border-radius: 1rem 1rem 0 0;
-        }
-
-        .form-control, .form-select {
-            border-radius: 0.5rem;
-            padding: 0.75rem 1rem;
-            border: 1px solid #dee2e6;
-            transition: all 0.3s;
-        }
-
-        .form-control:focus, .form-select:focus {
-            box-shadow: 0 0 0 0.2rem rgba(52, 152, 219, 0.25);
-            border-color: var(--accent-color);
-        }
-
-        .required-field::after {
-            content: "*";
-            color: var(--danger-color);
-            margin-left: 4px;
-        }
-
-        .search-box {
-            background: white;
-            border-radius: 0.5rem;
-            padding: 1rem;
-            margin-bottom: 1.5rem;
-            box-shadow: 0 0.125rem 0.25rem rgba(0,0,0,0.075);
-        }
-
-        .search-box .form-control {
-            border-radius: 0.5rem 0 0 0.5rem;
-        }
-
-        .search-box .btn {
-            border-radius: 0 0.5rem 0.5rem 0;
-        }
-
-        .appointment-info {
-            display: flex;
-            align-items: center;
-            gap: 1rem;
-        }
-
-        .appointment-avatar {
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            background: var(--accent-color);
-            color: white;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-weight: bold;
-            font-size: 1.2rem;
-        }
-
-        .appointment-details {
-            display: flex;
-            flex-direction: column;
-        }
-
-        .appointment-name {
+        .table th {
+            background-color: #f8f9fa;
             font-weight: 600;
-            color: var(--primary-color);
         }
 
-        .appointment-specialty {
-            font-size: 0.875rem;
-            color: var(--secondary-color);
-        }
-
-        .badge {
-            padding: 0.5rem 1rem;
+        .estado-badge {
+            padding: 0.5em 1em;
             border-radius: 0.5rem;
-            font-size: 0.875rem;
             font-weight: 500;
         }
 
-        .page-header {
-            background: linear-gradient(45deg, var(--primary-color), var(--accent-color));
-            color: white;
-            border-radius: 1rem;
-            padding: 2rem;
-            margin-bottom: 2rem;
+        .estado-pendiente {
+            background-color: #ffeeba;
+            color: #856404;
         }
 
-        .page-header h1 {
-            font-size: 2.5rem;
-            font-weight: 600;
-            margin-bottom: 0.5rem;
+        .estado-confirmada {
+            background-color: #d4edda;
+            color: #155724;
         }
 
-        .page-header p {
-            font-size: 1.1rem;
-            opacity: 0.9;
-            margin-bottom: 0;
+        .estado-cancelada {
+            background-color: #f8d7da;
+            color: #721c24;
+        }
+
+        .estado-completada {
+            background-color: #cce5ff;
+            color: #004085;
+        }
+
+        .dt-buttons {
+            margin-bottom: 1rem;
+        }
+
+        .dt-button {
+            background-color: #3498db !important;
+            color: white !important;
+            border: none !important;
+            padding: 0.5rem 1rem !important;
+            border-radius: 0.5rem !important;
+            margin-right: 0.5rem !important;
+        }
+
+        .dt-button:hover {
+            background-color: #2980b9 !important;
         }
     </style>
 </head>
 <body>
-    <div class="container-fluid">
-        <div class="row">
-            <!-- Sidebar -->
-            <nav class="col-md-3 col-lg-2 d-md-block sidebar">
-                <div class="position-sticky">
-                    <div class="text-center py-4">
-                        <h4 class="text-white">Sistema de Citas</h4>
-                        <p class="text-light opacity-75">Panel de Administración</p>
-                    </div>
-                    
-                    <ul class="nav flex-column px-3">
-                        <li class="nav-item">
-                            <a class="nav-link" href="${pageContext.request.contextPath}/admin/inicio">
-                                <i class="bi bi-house"></i>
-                                Inicio
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" href="${pageContext.request.contextPath}/admin/paciente/pacientes">
-                                <i class="bi bi-people"></i>
-                                Pacientes
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" href="${pageContext.request.contextPath}/admin/doctor/doctores">
-                                <i class="bi bi-person-badge"></i>
-                                Doctores
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link active" href="${pageContext.request.contextPath}/admin/citas/citas">
-                                <i class="bi bi-calendar-check"></i>
-                                Citas
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" href="${pageContext.request.contextPath}/admin/especialidad/especialidades">
-                                <i class="bi bi-list-check"></i>
-                                Especialidades
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" href="${pageContext.request.contextPath}/admin/horario/horarios">
-                                <i class="bi bi-clock"></i>
-                                Horarios
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" href="${pageContext.request.contextPath}/admin/usuario/usuarios">
-                                <i class="bi bi-person-gear"></i>
-                                Usuarios
-                            </a>
-                        </li>
-                    </ul>
-                </div>
-            </nav>
-
-            <!-- Contenido principal -->
-            <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4 py-4">
-                <!-- Encabezado de página -->
-                <div class="page-header">
-                    <h1>Gestión de Citas</h1>
-                    <p>Administra las citas médicas del sistema</p>
-                </div>
-
-                <!-- Barra de búsqueda -->
-                <div class="search-box">
-                    <form class="row g-3" action="${pageContext.request.contextPath}/admin/citas" method="get">
-                        <div class="col-md-8">
-                            <div class="input-group">
-                                <input type="text" class="form-control" name="buscar" placeholder="Buscar por paciente, doctor o especialidad...">
-                                <button class="btn btn-primary" type="submit">
-                                    <i class="bi bi-search"></i> Buscar
-                                </button>
-                            </div>
-                        </div>
-                        <div class="col-md-4 text-end">
-                            <button type="button" class="btn btn-success" data-bs-toggle="modal" data-bs-target="#citaModal">
-                                <i class="bi bi-plus-lg"></i> Nueva Cita
-                            </button>
-                        </div>
-                    </form>
-                </div>
-
-                <!-- Tabla de citas -->
-                <div class="card">
-                    <div class="card-body">
-                        <div class="table-responsive">
-                            <table class="table table-hover">
-                                <thead>
-                                    <tr>
-                                        <th>Fecha</th>
-                                        <th>Hora</th>
-                                        <th>Paciente</th>
-                                        <th>Doctor</th>
-                                        <th>Especialidad</th>
-                                        <th>Estado</th>
-                                        <th>Acciones</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    <c:forEach items="${citas}" var="cita">
-                                        <tr>
-                                            <td><fmt:formatDate value="${cita.fecha}" pattern="dd/MM/yyyy"/></td>
-                                            <td>${cita.hora}</td>
-                                            <td>
-                                                <div class="appointment-info">
-                                                    <div class="appointment-avatar">
-                                                        ${cita.paciente.nombres.charAt(0)}${cita.paciente.apellidos.charAt(0)}
-                                                    </div>
-                                                    <div class="appointment-details">
-                                                        <span class="appointment-name">${cita.paciente.nombres} ${cita.paciente.apellidos}</span>
-                                                        <span class="appointment-specialty">${cita.doctor.especialidad.nombre}</span>
-                                                    </div>
-                                                </div>
-                                            </td>
-                                            <td>${cita.doctor.nombres} ${cita.doctor.apellidos}</td>
-                                            <td>${cita.doctor.especialidad.nombre}</td>
-                                            <td>
-                                                <span class="badge bg-${cita.estado eq 'PENDIENTE' ? 'warning' : 
-                                                                   cita.estado eq 'CONFIRMADA' ? 'success' : 
-                                                                   cita.estado eq 'CANCELADA' ? 'danger' : 'secondary'}">
-                                                    ${cita.estado}
-                                                </span>
-                                            </td>
-                                            <td>
-                                                <div class="btn-group">
-                                                    <a href="${pageContext.request.contextPath}/admin/citas/citas?accion=editar&id=${cita.id}" class="btn btn-sm btn-primary btn-action">
-                                                        <i class="bi bi-pencil"></i>
-                                                    </a>
-                                                    <button class="btn btn-sm btn-danger btn-action" onclick="eliminarCita('${cita.id}')">
-                                                        <i class="bi bi-trash"></i>
-                                                    </button>
-                                                </div>
-                                            </td>
-                                        </tr>
-                                    </c:forEach>
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
-                </div>
-            </main>
+    <!-- Sidebar -->
+    <div class="sidebar">
+        <div class="text-center mb-4">
+            <h4 class="text-white">Sistema de Citas</h4>
         </div>
+        <ul class="nav flex-column">
+            <li class="nav-item">
+                <a class="nav-link" href="${pageContext.request.contextPath}/admin/dashboard">
+                    <i class="bi bi-house-door"></i> Dashboard
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link active" href="${pageContext.request.contextPath}/admin/citas/citas">
+                    <i class="bi bi-calendar-check"></i> Citas
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="${pageContext.request.contextPath}/admin/pacientes">
+                    <i class="bi bi-people"></i> Pacientes
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="${pageContext.request.contextPath}/admin/doctores">
+                    <i class="bi bi-person-badge"></i> Doctores
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="${pageContext.request.contextPath}/admin/especialidades">
+                    <i class="bi bi-list-check"></i> Especialidades
+                </a>
+            </li>
+        </ul>
     </div>
 
-    <!-- Modal para crear/editar cita -->
-    <div class="modal fade" id="citaModal" tabindex="-1">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="citaModalLabel">Nueva Cita</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                </div>
-                <div class="modal-body">
-                    <form id="citaForm" action="${pageContext.request.contextPath}/admin/citas/citas" method="post" class="needs-validation" novalidate>
-                        <input type="hidden" name="accion" value="crear">
-                        
-                        <div class="mb-3">
-                            <label for="buscarPaciente" class="form-label required-field">Buscar Paciente</label>
-                            <input type="text" class="form-control" id="buscarPaciente" placeholder="Ingrese nombre, apellido o DNI del paciente">
-                        </div>
-                        
-                        <div class="mb-3">
-                            <label for="paciente" class="form-label required-field">Paciente</label>
-                            <select class="form-select" id="paciente" name="paciente" required>
-                                <option value="">Seleccione un paciente</option>
-                            </select>
-                            <div class="invalid-feedback">
-                                Por favor seleccione un paciente.
-                            </div>
-                        </div>
-                        
-                        <div class="mb-3">
-                            <label for="especialidad" class="form-label required-field">Especialidad</label>
-                            <select class="form-select" id="especialidad" required>
-                                <option value="">Seleccione una especialidad</option>
-                            </select>
-                            <div class="invalid-feedback">
-                                Por favor seleccione una especialidad.
-                            </div>
-                        </div>
-                        
-                        <div class="mb-3">
-                            <label for="doctor" class="form-label required-field">Doctor</label>
-                            <select class="form-select" id="doctor" name="doctor" required>
-                                <option value="">Seleccione un doctor</option>
-                            </select>
-                            <div class="invalid-feedback">
-                                Por favor seleccione un doctor.
-                            </div>
-                        </div>
-                        
-                        <div class="mb-3">
-                            <label for="fecha" class="form-label required-field">Fecha</label>
-                            <input type="date" class="form-control" id="fecha" name="fecha" required>
-                            <div class="invalid-feedback">
-                                Por favor seleccione una fecha.
-                            </div>
-                        </div>
-                        
-                        <div class="mb-3">
-                            <label for="hora" class="form-label required-field">Hora</label>
-                            <input type="time" class="form-control" id="hora" name="hora" required>
-                            <div class="invalid-feedback">
-                                Por favor seleccione una hora.
-                            </div>
-                        </div>
-                        
-                        <div class="mb-3">
-                            <label for="estado" class="form-label required-field">Estado</label>
-                            <select class="form-select" id="estado" name="estado" required>
-                                <option value="PENDIENTE">Pendiente</option>
-                                <option value="CONFIRMADA">Confirmada</option>
-                                <option value="CANCELADA">Cancelada</option>
-                            </select>
-                            <div class="invalid-feedback">
-                                Por favor seleccione un estado.
-                            </div>
-                        </div>
-                        
-                        <div class="modal-footer">
-                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-                            <button type="submit" class="btn btn-primary">Guardar</button>
-                        </div>
-                    </form>
-                </div>
+    <!-- Contenido principal -->
+    <div class="main-content">
+        <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+            <h1 class="h2">Gestión de Citas</h1>
+            <div class="btn-toolbar mb-2 mb-md-0">
+                <a href="${pageContext.request.contextPath}/admin/citas/crear" class="btn btn-primary">
+                    <i class="bi bi-plus-circle"></i> Nueva Cita
+                </a>
+            </div>
+        </div>
+
+        <!-- Mensajes de alerta -->
+        <c:if test="${not empty mensaje}">
+            <div class="alert alert-success alert-dismissible fade show" role="alert">
+                ${mensaje}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        </c:if>
+        <c:if test="${not empty error}">
+            <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                ${error}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        </c:if>
+
+        <!-- Tabla de citas -->
+        <div class="card">
+            <div class="card-body">
+                <table id="tablaCitas" class="table table-striped table-hover">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Fecha</th>
+                            <th>Hora</th>
+                            <th>Paciente</th>
+                            <th>Doctor</th>
+                            <th>Especialidad</th>
+                            <th>Estado</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <c:forEach items="${citas}" var="cita">
+                            <tr>
+                                <td>${cita.id}</td>
+                                <td><fmt:formatDate value="${cita.fecha}" pattern="dd/MM/yyyy"/></td>
+                                <td>${cita.hora}</td>
+                                <td>${cita.paciente.nombres} ${cita.paciente.apellidos}</td>
+                                <td>${cita.doctor.nombres} ${cita.doctor.apellidos}</td>
+                                <td>${cita.doctor.especialidad.nombre}</td>
+                                <td>
+                                    <span class="estado-badge estado-${cita.estado.toLowerCase()}">
+                                        ${cita.estado}
+                                    </span>
+                                </td>
+                                <td>
+                                    <div class="btn-group" role="group">
+                                        <a href="${pageContext.request.contextPath}/admin/citas/editar/${cita.id}" 
+                                           class="btn btn-sm btn-primary" title="Editar">
+                                            <i class="bi bi-pencil"></i>
+                                        </a>
+                                        <a href="${pageContext.request.contextPath}/admin/citas/comprobante/${cita.id}" 
+                                           class="btn btn-sm btn-info" title="Comprobante">
+                                            <i class="bi bi-file-earmark-text"></i>
+                                        </a>
+                                        <c:if test="${cita.estado != 'CANCELADA'}">
+                                            <button type="button" class="btn btn-sm btn-warning" 
+                                                    onclick="mostrarModalCancelar(${cita.id})" title="Cancelar">
+                                                <i class="bi bi-x-circle"></i>
+                                            </button>
+                                        </c:if>
+                                        <button type="button" class="btn btn-sm btn-danger" 
+                                                onclick="confirmarEliminar(${cita.id})" title="Eliminar">
+                                            <i class="bi bi-trash"></i>
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                        </c:forEach>
+                    </tbody>
+                </table>
             </div>
         </div>
     </div>
 
-    <!-- Formulario para eliminar cita -->
-    <form id="eliminarForm" action="${pageContext.request.contextPath}/admin/citas/citas" method="post" style="display: none;">
-        <input type="hidden" name="accion" value="eliminar">
-        <input type="hidden" name="id" id="eliminarId">
-    </form>
+    <!-- Modal de Cancelación -->
+    <div class="modal fade" id="modalCancelar" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Cancelar Cita</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <form action="${pageContext.request.contextPath}/admin/citas/citas" method="post">
+                    <div class="modal-body">
+                        <input type="hidden" name="accion" value="cancelar">
+                        <input type="hidden" name="id" id="citaIdCancelar">
+                        <div class="mb-3">
+                            <label for="motivo" class="form-label">Motivo de cancelación</label>
+                            <textarea class="form-control" id="motivo" name="motivo" rows="3" required></textarea>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+                        <button type="submit" class="btn btn-warning">Confirmar Cancelación</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
 
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.datatables.net/1.13.7/js/jquery.dataTables.min.js"></script>
+    <script src="https://cdn.datatables.net/1.13.7/js/dataTables.bootstrap5.min.js"></script>
+    <script src="https://cdn.datatables.net/buttons/2.4.2/js/dataTables.buttons.min.js"></script>
+    <script src="https://cdn.datatables.net/buttons/2.4.2/js/buttons.bootstrap5.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.53/pdfmake.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.53/vfs_fonts.js"></script>
+    <script src="https://cdn.datatables.net/buttons/2.4.2/js/buttons.html5.min.js"></script>
+    <script src="https://cdn.datatables.net/buttons/2.4.2/js/buttons.print.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.7.32/dist/sweetalert2.all.min.js"></script>
+
     <script>
-        // Función para eliminar cita
-        function eliminarCita(id) {
-            if (confirm('¿Está seguro de eliminar esta cita?')) {
-                document.getElementById('eliminarId').value = id;
-                document.getElementById('eliminarForm').submit();
-            }
-        }
-
-        // Establecer fecha mínima como hoy
-        document.getElementById('fecha').min = new Date().toISOString().split('T')[0];
-
-        // Función para cargar los doctores de una especialidad
-        function cargarDoctores(especialidadId) {
-            const doctorSelect = document.getElementById('doctor');
-            doctorSelect.innerHTML = '<option value="">Seleccione un doctor</option>';
-            
-            if (!especialidadId) return;
-
-            fetch('${pageContext.request.contextPath}/admin/doctor/doctores?especialidad=' + especialidadId)
-                .then(response => response.json())
-                .then(doctores => {
-                    doctores.forEach(doctor => {
-                        const option = document.createElement('option');
-                        option.value = doctor.id;
-                        option.textContent = `${doctor.nombres} ${doctor.apellidos} - ${doctor.especialidad.nombre}`;
-                        doctorSelect.appendChild(option);
-                    });
-                })
-                .catch(error => {
-                    console.error('Error:', error);
-                    alert('Error al cargar los doctores');
-                });
-        }
-
-        // Función para cargar las especialidades
-        function cargarEspecialidades() {
-            const especialidadSelect = document.getElementById('especialidad');
-            especialidadSelect.innerHTML = '<option value="">Seleccione una especialidad</option>';
-
-            fetch('${pageContext.request.contextPath}/admin/especialidad/especialidades')
-                .then(response => response.json())
-                .then(especialidades => {
-                    especialidades.forEach(especialidad => {
-                        const option = document.createElement('option');
-                        option.value = especialidad.id;
-                        option.textContent = especialidad.nombre;
-                        especialidadSelect.appendChild(option);
-                    });
-                })
-                .catch(error => {
-                    console.error('Error:', error);
-                    alert('Error al cargar las especialidades');
-                });
-        }
-
-        // Función para buscar pacientes
-        function buscarPacientes(termino) {
-            const pacienteSelect = document.getElementById('paciente');
-            pacienteSelect.innerHTML = '<option value="">Seleccione un paciente</option>';
-            
-            if (!termino) return;
-
-            fetch('${pageContext.request.contextPath}/admin/paciente/pacientes?buscar=' + termino)
-                .then(response => response.json())
-                .then(pacientes => {
-                    pacientes.forEach(paciente => {
-                        const option = document.createElement('option');
-                        option.value = paciente.id;
-                        option.textContent = `${paciente.nombres} ${paciente.apellidos}`;
-                        pacienteSelect.appendChild(option);
-                    });
-                })
-                .catch(error => {
-                    console.error('Error:', error);
-                    alert('Error al buscar pacientes');
-                });
-        }
-
-        // Cargar especialidades al abrir el modal
-        document.getElementById('citaModal').addEventListener('show.bs.modal', function () {
-            cargarEspecialidades();
+        $(document).ready(function() {
+            $('#tablaCitas').DataTable({
+                language: {
+                    url: '//cdn.datatables.net/plug-ins/1.13.7/i18n/es-ES.json'
+                },
+                dom: 'Bfrtip',
+                buttons: [
+                    {
+                        extend: 'excel',
+                        text: '<i class="bi bi-file-earmark-excel"></i> Excel',
+                        className: 'btn btn-success',
+                        exportOptions: {
+                            columns: [0, 1, 2, 3, 4, 5, 6]
+                        }
+                    },
+                    {
+                        extend: 'pdf',
+                        text: '<i class="bi bi-file-earmark-pdf"></i> PDF',
+                        className: 'btn btn-danger',
+                        exportOptions: {
+                            columns: [0, 1, 2, 3, 4, 5, 6]
+                        }
+                    },
+                    {
+                        extend: 'print',
+                        text: '<i class="bi bi-printer"></i> Imprimir',
+                        className: 'btn btn-info',
+                        exportOptions: {
+                            columns: [0, 1, 2, 3, 4, 5, 6]
+                        }
+                    }
+                ],
+                order: [[1, 'desc'], [2, 'asc']],
+                pageLength: 10,
+                responsive: true
+            });
         });
 
-        // Evento para buscar pacientes
-        document.getElementById('buscarPaciente').addEventListener('input', function(e) {
-            buscarPacientes(e.target.value);
-        });
+        function mostrarModalCancelar(id) {
+            $('#citaIdCancelar').val(id);
+            $('#modalCancelar').modal('show');
+        }
 
-        // Evento para cargar doctores cuando se selecciona una especialidad
-        document.getElementById('especialidad').addEventListener('change', function(e) {
-            cargarDoctores(e.target.value);
-        });
+        function confirmarEliminar(id) {
+            Swal.fire({
+                title: '¿Estás seguro?',
+                text: "Esta acción no se puede deshacer",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#d33',
+                cancelButtonColor: '#3085d6',
+                confirmButtonText: 'Sí, eliminar',
+                cancelButtonText: 'Cancelar'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    const form = document.createElement('form');
+                    form.method = 'POST';
+                    form.action = '${pageContext.request.contextPath}/admin/citas/citas';
+                    
+                    const accionInput = document.createElement('input');
+                    accionInput.type = 'hidden';
+                    accionInput.name = 'accion';
+                    accionInput.value = 'eliminar';
+                    
+                    const idInput = document.createElement('input');
+                    idInput.type = 'hidden';
+                    idInput.name = 'id';
+                    idInput.value = id;
+                    
+                    form.appendChild(accionInput);
+                    form.appendChild(idInput);
+                    document.body.appendChild(form);
+                    form.submit();
+                }
+            });
+        }
     </script>
 </body>
 </html>

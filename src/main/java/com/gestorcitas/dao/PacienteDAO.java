@@ -292,4 +292,35 @@ public class PacienteDAO {
         
         return pacientes;
     }
+
+    public List<Paciente> buscarPorTermino(String termino) throws SQLException {
+        List<Paciente> pacientes = new ArrayList<>();
+        String sql = "SELECT * FROM pacientes WHERE dni LIKE ? OR nombres LIKE ? OR apellidos LIKE ?";
+        
+        try (Connection conn = DatabaseUtil.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+            
+            String terminoBusqueda = "%" + termino + "%";
+            stmt.setString(1, terminoBusqueda);
+            stmt.setString(2, terminoBusqueda);
+            stmt.setString(3, terminoBusqueda);
+            
+            try (ResultSet rs = stmt.executeQuery()) {
+                while (rs.next()) {
+                    Paciente paciente = new Paciente();
+                    paciente.setId(rs.getInt("id"));
+                    paciente.setDni(rs.getString("dni"));
+                    paciente.setNombres(rs.getString("nombres"));
+                    paciente.setApellidos(rs.getString("apellidos"));
+                    paciente.setFechaNacimiento(rs.getDate("fecha_nacimiento"));
+                    paciente.setGenero(rs.getString("genero"));
+                    paciente.setDireccion(rs.getString("direccion"));
+                    paciente.setTelefono(rs.getString("telefono"));
+                    paciente.setEmail(rs.getString("email"));
+                    pacientes.add(paciente);
+                }
+            }
+        }
+        return pacientes;
+    }
 } 

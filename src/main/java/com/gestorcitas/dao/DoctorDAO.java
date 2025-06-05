@@ -168,4 +168,69 @@ public class DoctorDAO {
         }
         return doctores;
     }
+
+    public Doctor buscarPorId(int id) throws SQLException {
+        String sql = "SELECT d.*, e.id as especialidad_id, e.nombre as especialidad_nombre, e.descripcion as especialidad_descripcion " +
+                    "FROM doctores d " +
+                    "LEFT JOIN especialidades e ON d.especialidad_id = e.id " +
+                    "WHERE d.id = ?";
+
+        try (Connection conn = DatabaseUtil.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+            
+            stmt.setInt(1, id);
+            ResultSet rs = stmt.executeQuery();
+            
+            if (rs.next()) {
+                Doctor doctor = new Doctor();
+                doctor.setId(rs.getInt("id"));
+                doctor.setNombres(rs.getString("nombres"));
+                doctor.setApellidos(rs.getString("apellidos"));
+                doctor.setEmail(rs.getString("email"));
+                doctor.setTelefono(rs.getString("telefono"));
+
+                Especialidad especialidad = new Especialidad();
+                especialidad.setId(rs.getInt("especialidad_id"));
+                especialidad.setNombre(rs.getString("especialidad_nombre"));
+                especialidad.setDescripcion(rs.getString("especialidad_descripcion"));
+                doctor.setEspecialidad(especialidad);
+
+                return doctor;
+            }
+        }
+        return null;
+    }
+
+    public List<Doctor> listarPorEspecialidad(int especialidadId) throws SQLException {
+        List<Doctor> doctores = new ArrayList<>();
+        String sql = "SELECT d.*, e.nombre as especialidad_nombre " +
+                    "FROM doctores d " +
+                    "JOIN especialidades e ON d.especialidad_id = e.id " +
+                    "WHERE d.especialidad_id = ?";
+        
+        try (Connection conn = DatabaseUtil.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+            
+            stmt.setInt(1, especialidadId);
+            
+            try (ResultSet rs = stmt.executeQuery()) {
+                while (rs.next()) {
+                    Doctor doctor = new Doctor();
+                    doctor.setId(rs.getInt("id"));
+                    doctor.setNombres(rs.getString("nombres"));
+                    doctor.setApellidos(rs.getString("apellidos"));
+                    doctor.setTelefono(rs.getString("telefono"));
+                    doctor.setEmail(rs.getString("email"));
+                    
+                    Especialidad especialidad = new Especialidad();
+                    especialidad.setId(especialidadId);
+                    especialidad.setNombre(rs.getString("especialidad_nombre"));
+                    doctor.setEspecialidad(especialidad);
+                    
+                    doctores.add(doctor);
+                }
+            }
+        }
+        return doctores;
+    }
 }

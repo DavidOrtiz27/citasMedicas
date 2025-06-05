@@ -8,21 +8,23 @@ public class Cita {
     private String hora;
     private Paciente paciente;
     private Doctor doctor;
-    private Especialidad especialidad;
     private String estado;
+    private String motivoCancelacion;
+    private Date fechaCreacion;
 
     public Cita() {
     }
 
     public Cita(int id, Date fecha, String hora, Paciente paciente, Doctor doctor, 
-                Especialidad especialidad, String estado) {
+                String estado, String motivoCancelacion, Date fechaCreacion) {
         this.id = id;
         this.fecha = fecha;
         this.hora = hora;
         this.paciente = paciente;
         this.doctor = doctor;
-        this.especialidad = especialidad;
         this.estado = estado;
+        this.motivoCancelacion = motivoCancelacion;
+        this.fechaCreacion = fechaCreacion;
     }
 
     // Getters y Setters
@@ -66,19 +68,27 @@ public class Cita {
         this.doctor = doctor;
     }
 
-    public Especialidad getEspecialidad() {
-        return especialidad;
-    }
-
-    public void setEspecialidad(Especialidad especialidad) {
-        this.especialidad = especialidad;
-    }
-
     public String getEstado() {
         return estado;
     }
 
     public void setEstado(String estado) {
         this.estado = estado;
+    }
+
+    public String getMotivoCancelacion() {
+        return motivoCancelacion;
+    }
+
+    public void setMotivoCancelacion(String motivoCancelacion) {
+        this.motivoCancelacion = motivoCancelacion;
+    }
+
+    public Date getFechaCreacion() {
+        return fechaCreacion;
+    }
+
+    public void setFechaCreacion(Date fechaCreacion) {
+        this.fechaCreacion = fechaCreacion;
     }
 } 

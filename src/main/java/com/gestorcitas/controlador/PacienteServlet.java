@@ -1,21 +1,22 @@
 package com.gestorcitas.controlador;
 
-import com.gestorcitas.dao.PacienteDAO;
-import com.gestorcitas.modelo.Paciente;
-
-import javax.servlet.ServletException;
-import javax.servlet.annotation.WebServlet;
-import javax.servlet.http.HttpServlet;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import static java.lang.System.out;
 import java.sql.SQLException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
 
-import static java.lang.System.out;
+import javax.servlet.ServletException;
+import javax.servlet.annotation.WebServlet;
+import javax.servlet.http.HttpServlet;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
+import com.gestorcitas.dao.PacienteDAO;
+import com.gestorcitas.modelo.Paciente;
+import com.google.gson.Gson;
 
 @WebServlet(name = "PacienteServlet", urlPatterns = {"/admin/paciente/pacientes",           // GET - Listar pacientes
 		"/admin/paciente/pacientes/nuevo",     // GET - Mostrar formulario nuevo
@@ -38,43 +39,24 @@ public class PacienteServlet extends HttpServlet {
 
 	@Override
 	protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-		String servletPath = request.getServletPath();
-
+		String accion = request.getParameter("accion");
+		String termino = request.getParameter("termino");
+		
 		try {
-			if (servletPath.equals("/admin/paciente/pacientes")) {
-				// Listar todos los pacientes
-				String buscar = request.getParameter("buscar");
-				List<Paciente> pacientes;
-
-				if (buscar != null && !buscar.trim().isEmpty()) {
-					pacientes = pacienteDAO.buscarPacientes(buscar);
-				} else {
-					pacientes = pacienteDAO.listarPacientes();
-				}
-
-				request.setAttribute("pacientes", pacientes);
-				request.getRequestDispatcher("/vistas/admin/paciente/pacientes.jsp").forward(request, response);
-
-			} else if (servletPath.equals("/admin/paciente/pacientes/nuevo")) {
-				request.getRequestDispatcher("/vistas/admin/paciente/nuevo.jsp").forward(request, response);
-
-
-			} else if (servletPath.equals("/admin/paciente/pacientes/editar")) {
-				// Mostrar formulario editar
-				int id = Integer.parseInt(request.getParameter("id"));
-				Paciente paciente = pacienteDAO.obtenerPaciente(id);
-				if (paciente != null) {
-					request.setAttribute("paciente", paciente);
-					request.getRequestDispatcher("/vistas/admin/paciente/editar.jsp").forward(request, response);
-					out.println("Se ha mostrado el formulario de edición");
-				} else {
-					response.sendRedirect(request.getContextPath() + "/admin/paciente/pacientes");
-				}
+			if (termino != null && !termino.isEmpty()) {
+				// Buscar pacientes por DNI o nombre
+				buscarPacientes(request, response);
+			} else if ("crear".equals(accion)) {
+				mostrarFormularioCreacion(request, response);
+			} else if ("editar".equals(accion)) {
+				mostrarFormularioEdicion(request, response);
+			} else {
+				listarPacientes(request, response);
 			}
 		} catch (SQLException e) {
 			e.printStackTrace();
 			request.setAttribute("error", "Error al procesar la solicitud: " + e.getMessage());
-			request.getRequestDispatcher("/vistas/admin/paciente/pacientes.jsp").forward(request, response);
+			request.getRequestDispatcher("/vistas/admin/pacientes/pacientes.jsp").forward(request, response);
 		}
 	}
 
@@ -102,6 +84,45 @@ public class PacienteServlet extends HttpServlet {
 			request.setAttribute("error", "Error al procesar la solicitud: " + e.getMessage());
 			request.getRequestDispatcher("/vistas/admin/paciente/pacientes.jsp").forward(request, response);
 		}
+	}
+
+	private void listarPacientes(HttpServletRequest request, HttpServletResponse response) throws SQLException, ServletException, IOException {
+		String buscar = request.getParameter("buscar");
+		List<Paciente> pacientes;
+
+		if (buscar != null && !buscar.trim().isEmpty()) {
+			pacientes = pacienteDAO.buscarPacientes(buscar);
+		} else {
+			pacientes = pacienteDAO.listarPacientes();
+		}
+
+		request.setAttribute("pacientes", pacientes);
+		request.getRequestDispatcher("/vistas/admin/paciente/pacientes.jsp").forward(request, response);
+	}
+
+	private void mostrarFormularioCreacion(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+		request.getRequestDispatcher("/vistas/admin/paciente/nuevo.jsp").forward(request, response);
+	}
+
+	private void mostrarFormularioEdicion(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException, SQLException {
+		int id = Integer.parseInt(request.getParameter("id"));
+		Paciente paciente = pacienteDAO.obtenerPaciente(id);
+		if (paciente != null) {
+			request.setAttribute("paciente", paciente);
+			request.getRequestDispatcher("/vistas/admin/paciente/editar.jsp").forward(request, response);
+			out.println("Se ha mostrado el formulario de edición");
+		} else {
+			response.sendRedirect(request.getContextPath() + "/admin/paciente/pacientes");
+		}
+	}
+
+	private void buscarPacientes(HttpServletRequest request, HttpServletResponse response) throws SQLException, IOException {
+		String termino = request.getParameter("termino");
+		List<Paciente> pacientes = pacienteDAO.buscarPorTermino(termino);
+		
+		response.setContentType("application/json");
+		response.setCharacterEncoding("UTF-8");
+		response.getWriter().write(new Gson().toJson(pacientes));
 	}
 
 	private void crearPaciente(HttpServletRequest request, HttpServletResponse response) throws SQLException, ServletException, IOException {

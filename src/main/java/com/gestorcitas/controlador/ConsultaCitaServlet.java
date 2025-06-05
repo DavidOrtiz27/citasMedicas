@@ -119,7 +119,7 @@ public class ConsultaCitaServlet extends HttpServlet {
                     return;
                 }
                 
-                citaDAO.actualizarEstado(id, "CANCELADA");
+                citaDAO.actualizarEstado(id, "CANCELADA", "Cancelada por el paciente");
                 response.setStatus(HttpServletResponse.SC_OK);
                 response.getWriter().write(gson.toJson(cita));
                 
