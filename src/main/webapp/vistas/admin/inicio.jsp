@@ -198,17 +198,33 @@
                             </a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link" href="${pageContext.request.contextPath}/admin/horario/horarios">
-                                <i class="bi bi-clock"></i>
-                                Horarios
-                            </a>
-                        </li>
-                        <li class="nav-item">
                             <a class="nav-link" href="${pageContext.request.contextPath}/admin/usuario/usuarios">
                                 <i class="bi bi-person-gear"></i>
                                 Usuarios
                             </a>
                         </li>
+                        <label for="language-select">Select Language:</label>
+                        <select id="language-select">
+                          <option value="en">English</option>
+                          <option value="es">Spanish</option>
+                          <option value="fr">French</option>
+                        </select>
+                      
+                        <script>
+                          document.getElementById('language-select').addEventListener('change', function() {
+                            const lang = this.value;
+                            const url = new URL(window.location.href);
+                            url.searchParams.set('lang', lang);
+                            window.location.href = url.toString(); // Reloads the page with new param
+                          });
+                      
+                          // Optional: Set current selection from URL param
+                          const currentLang = new URL(window.location.href).searchParams.get('lang');
+                          if (currentLang) {
+                            document.getElementById('language-select').value = currentLang;
+                          }
+                        </script>
+
                         <li class="nav-item">
                             <a class="nav-link" href="${pageContext.request.contextPath}/logout">
                                 <i class="bi bi-box-arrow-right"></i>

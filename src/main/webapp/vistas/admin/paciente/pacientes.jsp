@@ -107,11 +107,7 @@
                             <i class="bi bi-list-check"></i> Especialidades
                         </a>
                     </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="${pageContext.request.contextPath}/admin/horario/horarios">
-                            <i class="bi bi-clock"></i> Horarios
-                        </a>
-                    </li>
+                    
                     <li class="nav-item">
                         <a class="nav-link" href="${pageContext.request.contextPath}/admin/usuario/usuarios">
                             <i class="bi bi-people-fill"></i> Usuarios

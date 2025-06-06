@@ -25,6 +25,13 @@ public class LoginServlet extends HttpServlet {
     }
     
     @Override
+    protected void doGet(HttpServletRequest request, HttpServletResponse response) 
+            throws ServletException, IOException {
+        // Redirigir al formulario de login
+        request.getRequestDispatcher("/vistas/login.jsp").forward(request, response);
+    }
+    
+    @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response) 
             throws ServletException, IOException {
         String username = request.getParameter("username");
