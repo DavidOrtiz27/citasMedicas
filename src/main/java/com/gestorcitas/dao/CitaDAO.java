@@ -12,6 +12,7 @@ import java.util.List;
 import com.gestorcitas.modelo.Cita;
 import com.gestorcitas.modelo.Doctor;
 import com.gestorcitas.modelo.Paciente;
+import com.gestorcitas.modelo.Especialidad;
 import com.gestorcitas.util.DatabaseUtil;
 
 public class CitaDAO {
@@ -319,6 +320,13 @@ public class CitaDAO {
         doctor.setId(rs.getInt("doctor_id"));
         doctor.setNombres(rs.getString("doctor_nombres"));
         doctor.setApellidos(rs.getString("doctor_apellidos"));
+        
+        // Mapear especialidad del doctor
+        Especialidad especialidad = new Especialidad();
+        especialidad.setId(rs.getInt("especialidad_id"));
+        especialidad.setNombre(rs.getString("especialidad_nombre"));
+        doctor.setEspecialidad(especialidad);
+        
         cita.setDoctor(doctor);
         
         // Mapear paciente

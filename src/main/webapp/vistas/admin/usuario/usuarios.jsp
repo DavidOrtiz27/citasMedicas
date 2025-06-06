@@ -163,7 +163,7 @@
                             </a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link" href="${pageContext.request.contextPath}/admin/cita/citas">
+                            <a class="nav-link" href="${pageContext.request.contextPath}/admin/citas/citas">
                                 <i class="bi bi-calendar-check"></i>
                                 Citas
                             </a>
@@ -199,7 +199,7 @@
                             <h1>Usuarios</h1>
                             <p>Gestión de usuarios del sistema</p>
                         </div>
-                        <a href="${pageContext.request.contextPath}/admin/usuario/nuevo" class="btn btn-light btn-action">
+                        <a href="${pageContext.request.contextPath}/admin/usuario/nuevo" class="btn btn-primary btn-action">
                             <i class="bi bi-plus-lg"></i> Nuevo Usuario
                         </a>
                     </div>

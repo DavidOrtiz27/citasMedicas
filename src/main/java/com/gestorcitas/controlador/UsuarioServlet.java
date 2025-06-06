@@ -16,7 +16,8 @@ import javax.servlet.http.HttpServletResponse;
 @WebServlet(urlPatterns = {
     "/admin/usuario/usuarios",      // GET: Listar usuarios
     "/admin/usuario/usuarios/*",    // GET: Ver detalles de usuario
-    "/admin/usuario/crear",         // GET/POST: Crear usuario
+    "/admin/usuario/crear",         // POST: Crear usuario
+    "/admin/usuario/nuevo",         // GET: Mostrar formulario de creación
     "/admin/usuario/editar/*",      // GET/POST: Editar usuario
     "/admin/usuario/eliminar/*",    // POST: Eliminar usuario
     "/admin/usuario/*"              // GET: Ver detalles de usuario (ruta alternativa)
@@ -71,7 +72,7 @@ public class UsuarioServlet extends HttpServlet {
             // Manejar otras rutas
             if (path.equals("/admin/usuario/usuarios")) {
                 listarUsuarios(request, response);
-            } else if (path.equals("/admin/usuario/crear")) {
+            } else if (path.equals("/admin/usuario/nuevo")) {
                 mostrarFormularioCreacion(request, response);
             } else if (path.matches("/admin/usuario/editar/\\d+")) {
                 mostrarFormularioEdicion(request, response);

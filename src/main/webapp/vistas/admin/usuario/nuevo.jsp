@@ -198,15 +198,15 @@
                                     </div>
                                 </div>
                             </div>
-
+                            
                             <div class="row">
                                 <div class="col-md-6 mb-3">
                                     <label for="rol" class="form-label required-field">Rol</label>
                                     <select class="form-select" id="rol" name="rol" required>
                                         <option value="">Seleccione un rol</option>
-                                        <option value="ADMIN">Administrador</option>
-                                        <option value="DOCTOR">Doctor</option>
-                                        <option value="RECEPCIONISTA">Recepcionista</option>
+                                        <option value="admin">Administrador</option>
+                                        <option value="doctor">Doctor</option>
+                                        <option value="recepcionista">Recepcionista</option>
                                     </select>
                                     <div class="invalid-feedback">
                                         Por favor seleccione un rol.
@@ -214,11 +214,12 @@
                                 </div>
                                 
                                 <div class="col-md-6 mb-3">
-                                    <label for="activo" class="form-label">Estado</label>
-                                    <select class="form-select" id="activo" name="activo">
-                                        <option value="true">Activo</option>
-                                        <option value="false">Inactivo</option>
-                                    </select>
+                                    <div class="form-check mt-4">
+                                        <input class="form-check-input" type="checkbox" id="activo" name="activo" checked>
+                                        <label class="form-check-label" for="activo">
+                                            Usuario Activo
+                                        </label>
+                                    </div>
                                 </div>
                             </div>
 
