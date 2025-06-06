@@ -249,23 +249,19 @@
                                 <td>
                                     <div class="btn-group" role="group">
                                         <a href="${pageContext.request.contextPath}/admin/citas/editar/${cita.id}" 
-                                           class="btn btn-sm btn-primary" title="Editar">
+                                           class="btn btn-sm btn-primary">
                                             <i class="bi bi-pencil"></i>
                                         </a>
-                                        <a href="${pageContext.request.contextPath}/admin/citas/comprobante/${cita.id}" 
-                                           class="btn btn-sm btn-info" title="Comprobante">
-                                            <i class="bi bi-file-earmark-text"></i>
-                                        </a>
-                                        <c:if test="${cita.estado != 'CANCELADA'}">
-                                            <button type="button" class="btn btn-sm btn-warning" 
-                                                    onclick="mostrarModalCancelar('${cita.id}')" title="Cancelar">
-                                                <i class="bi bi-x-circle"></i>
-                                            </button>
-                                        </c:if>
-                                        <button type="button" class="btn btn-sm btn-danger" 
-                                                onclick="eliminarCita('${cita.id}')" title="Eliminar">
+                                        <button type="button" 
+                                                class="btn btn-sm btn-danger" 
+                                                onclick="eliminarCita(${cita.id})">
                                             <i class="bi bi-trash"></i>
                                         </button>
+                                        <a href="${pageContext.request.contextPath}/admin/citas/comprobante/${cita.id}" 
+                                           class="btn btn-sm btn-info" 
+                                           target="_blank">
+                                            <i class="bi bi-file-pdf"></i>
+                                        </a>
                                     </div>
                                 </td>
                             </tr>
@@ -320,102 +316,62 @@
     <script>
         $(document).ready(function() {
             $('#tablaCitas').DataTable({
-                language: {
-                    url: '//cdn.datatables.net/plug-ins/1.13.7/i18n/es-ES.json'
-                },
                 dom: 'Bfrtip',
                 buttons: [
-                    {
-                        extend: 'excel',
-                        text: '<i class="bi bi-file-earmark-excel"></i> Excel',
-                        className: 'btn btn-success',
-                        exportOptions: {
-                            columns: [0, 1, 2, 3, 4, 5, 6]
-                        }
-                    },
-                    {
-                        extend: 'pdf',
-                        text: '<i class="bi bi-file-earmark-pdf"></i> PDF',
-                        className: 'btn btn-danger',
-                        exportOptions: {
-                            columns: [0, 1, 2, 3, 4, 5, 6]
-                        }
-                    }
+                    'copy', 'csv', 'excel', 'pdf', 'print'
                 ],
-                order: [[1, 'desc'], [2, 'asc']],
-                pageLength: 10,
-                responsive: true,
-                processing: true,
-                serverSide: false
+                language: {
+                    url: '//cdn.datatables.net/plug-ins/1.13.7/i18n/es-ES.json'
+                }
             });
         });
 
-        function mostrarModalCancelar(id) {
-            $('#citaIdCancelar').val(id);
-            $('#modalCancelar').modal('show');
-        }
-
-        // Función para eliminar cita
-        async function eliminarCita(id) {
-            try {
-                const result = await Swal.fire({
-                    title: '¿Estás seguro?',
-                    text: "Esta acción no se puede deshacer",
-                    icon: 'warning',
-                    showCancelButton: true,
-                    confirmButtonColor: '#3085d6',
-                    cancelButtonColor: '#d33',
-                    confirmButtonText: 'Sí, eliminar',
-                    cancelButtonText: 'Cancelar'
-                });
-
+        function eliminarCita(id) {
+            Swal.fire({
+                title: '¿Estás seguro?',
+                text: "Esta acción no se puede deshacer",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#d33',
+                cancelButtonColor: '#3085d6',
+                confirmButtonText: 'Sí, eliminar',
+                cancelButtonText: 'Cancelar'
+            }).then((result) => {
                 if (result.isConfirmed) {
-                    const formData = new URLSearchParams();
-                    formData.append('accion', 'eliminar');
-                    formData.append('id', id);
-
-                    const response = await fetch('${pageContext.request.contextPath}/admin/citas/citas', {
-                        method: 'POST',
-                        body: formData,
-                        headers: {
-                            'Content-Type': 'application/x-www-form-urlencoded'
+                    $.ajax({
+                        url: '${pageContext.request.contextPath}/admin/citas/citas',
+                        type: 'POST',
+                        data: {
+                            accion: 'eliminar',
+                            id: id
+                        },
+                        success: function(response) {
+                            if (response.success) {
+                                Swal.fire({
+                                    title: '¡Eliminado!',
+                                    text: response.message,
+                                    icon: 'success'
+                                }).then(() => {
+                                    window.location.reload();
+                                });
+                            } else {
+                                Swal.fire({
+                                    title: 'Error',
+                                    text: response.message,
+                                    icon: 'error'
+                                });
+                            }
+                        },
+                        error: function() {
+                            Swal.fire({
+                                title: 'Error',
+                                text: 'Ocurrió un error al eliminar la cita',
+                                icon: 'error'
+                            });
                         }
                     });
-
-                    // Si la respuesta es una redirección, seguirla
-                    if (response.redirected) {
-                        window.location.href = response.url;
-                        return;
-                    }
-
-                    const text = await response.text();
-                    let result;
-                    try {
-                        result = JSON.parse(text);
-                        if (result.success) {
-                            await Swal.fire({
-                                icon: 'success',
-                                title: 'Éxito',
-                                text: result.message || 'Cita eliminada correctamente',
-                                showConfirmButton: false,
-                                timer: 1500
-                            });
-                            window.location.reload();
-                        } else {
-                            throw new Error(result.message || 'Error al eliminar la cita');
-                        }
-                    } catch (e) {
-                        throw new Error('Error al procesar la respuesta del servidor');
-                    }
                 }
-            } catch (error) {
-                console.error('Error:', error);
-                Swal.fire({
-                    icon: 'error',
-                    title: 'Error',
-                    text: error.message || 'Error al eliminar la cita'
-                });
-            }
+            });
         }
     </script>
 </body>

@@ -68,10 +68,10 @@ public class CitaServlet extends HttpServlet {
             } else if (servletPath.equals("/admin/citas/crear")) {
                 // Mostrar formulario de creación
                 mostrarFormularioCreacion(request, response);
-            } else if (servletPath.equals("/admin/citas/editar") && pathInfo != null) {
+            } else if (servletPath.startsWith("/admin/citas/editar")) {
                 // Mostrar formulario de edición
                 mostrarFormularioEdicion(request, response);
-            } else if (servletPath.equals("/admin/citas/comprobante") && pathInfo != null) {
+            } else if (servletPath.startsWith("/admin/citas/comprobante")) {
                 // Generar comprobante PDF
                 generarComprobante(request, response);
             } else if (servletPath.equals("/admin/citas/reporte")) {
@@ -514,14 +514,15 @@ public class CitaServlet extends HttpServlet {
             throws SQLException, ServletException, IOException {
         try {
             int id = Integer.parseInt(request.getParameter("id"));
-            citaDAO.eliminar(id);
+            boolean eliminado = citaDAO.eliminar(id);
             
-            // Redirigir directamente a la lista de citas
-            response.sendRedirect(request.getContextPath() + "/admin/citas/citas");
-        } catch (Exception e) {
-            e.printStackTrace();
-            request.setAttribute("error", "Error al eliminar la cita: " + e.getMessage());
-            response.sendRedirect(request.getContextPath() + "/admin/citas/citas");
+            if (eliminado) {
+                response.getWriter().write("{\"success\":true,\"message\":\"Cita eliminada correctamente\"}");
+            } else {
+                response.getWriter().write("{\"success\":false,\"message\":\"No se pudo eliminar la cita\"}");
+            }
+        } catch (NumberFormatException e) {
+            response.getWriter().write("{\"success\":false,\"message\":\"ID de cita inválido\"}");
         }
     }
 

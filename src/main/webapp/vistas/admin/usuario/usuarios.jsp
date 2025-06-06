@@ -1,11 +1,13 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
+<%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <title>Gestión de Usuarios - Sistema de Citas Médicas</title>
+    <title>Usuarios - Sistema de Citas Médicas</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.7.2/font/bootstrap-icons.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/sweetalert2@11.7.32/dist/sweetalert2.min.css" rel="stylesheet">
     <style>
         :root {
             --primary-color: #2c3e50;
@@ -62,113 +64,6 @@
             transform: translateY(-5px);
         }
 
-        .table {
-            border-radius: 0.5rem;
-            overflow: hidden;
-        }
-
-        .table thead {
-            background: var(--primary-color);
-            color: white;
-        }
-
-        .btn-action {
-            padding: 0.5rem 1rem;
-            border-radius: 0.5rem;
-            transition: all 0.3s;
-        }
-
-        .btn-action:hover {
-            transform: translateY(-2px);
-        }
-
-        .modal-content {
-            border-radius: 1rem;
-            border: none;
-        }
-
-        .modal-header {
-            background: var(--primary-color);
-            color: white;
-            border-radius: 1rem 1rem 0 0;
-        }
-
-        .form-control, .form-select {
-            border-radius: 0.5rem;
-            padding: 0.75rem 1rem;
-            border: 1px solid #dee2e6;
-            transition: all 0.3s;
-        }
-
-        .form-control:focus, .form-select:focus {
-            box-shadow: 0 0 0 0.2rem rgba(52, 152, 219, 0.25);
-            border-color: var(--accent-color);
-        }
-
-        .required-field::after {
-            content: "*";
-            color: var(--danger-color);
-            margin-left: 4px;
-        }
-
-        .search-box {
-            background: white;
-            border-radius: 0.5rem;
-            padding: 1rem;
-            margin-bottom: 1.5rem;
-            box-shadow: 0 0.125rem 0.25rem rgba(0,0,0,0.075);
-        }
-
-        .search-box .form-control {
-            border-radius: 0.5rem 0 0 0.5rem;
-        }
-
-        .search-box .btn {
-            border-radius: 0 0.5rem 0.5rem 0;
-        }
-
-        .user-info {
-            display: flex;
-            align-items: center;
-            gap: 1rem;
-        }
-
-        .user-avatar {
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            background: var(--accent-color);
-            color: white;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-weight: bold;
-            font-size: 1.2rem;
-        }
-
-        .user-details {
-            display: flex;
-            flex-direction: column;
-        }
-
-        .user-name {
-            font-weight: 600;
-            color: var(--primary-color);
-        }
-
-        .user-role {
-            font-size: 0.875rem;
-            color: var(--secondary-color);
-        }
-
-        .role-badge {
-            background: var(--accent-color);
-            color: white;
-            padding: 0.5rem 1rem;
-            border-radius: 0.5rem;
-            font-size: 0.875rem;
-        }
-
         .page-header {
             background: linear-gradient(45deg, var(--primary-color), var(--accent-color));
             color: white;
@@ -187,6 +82,53 @@
             font-size: 1.1rem;
             opacity: 0.9;
             margin-bottom: 0;
+        }
+
+        .btn-action {
+            padding: 0.5rem 1rem;
+            border-radius: 0.5rem;
+            transition: all 0.3s;
+        }
+
+        .btn-action:hover {
+            transform: translateY(-2px);
+        }
+
+        .status-badge {
+            padding: 0.5rem 1rem;
+            border-radius: 2rem;
+            font-weight: 500;
+        }
+
+        .status-active {
+            background-color: var(--success-color);
+            color: white;
+        }
+
+        .status-inactive {
+            background-color: var(--danger-color);
+            color: white;
+        }
+
+        .table {
+            border-radius: 1rem;
+            overflow: hidden;
+        }
+
+        .table thead th {
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 1rem;
+        }
+
+        .table tbody td {
+            padding: 1rem;
+            vertical-align: middle;
+        }
+
+        .table tbody tr:hover {
+            background-color: rgba(52, 152, 219, 0.1);
         }
     </style>
 </head>
@@ -209,7 +151,7 @@
                             </a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link" href="${pageContext.request.contextPath}/admin/pacientes">
+                            <a class="nav-link" href="${pageContext.request.contextPath}/admin/paciente/pacientes">
                                 <i class="bi bi-people"></i>
                                 Pacientes
                             </a>
@@ -221,25 +163,25 @@
                             </a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link" href="${pageContext.request.contextPath}/admin/citas">
+                            <a class="nav-link" href="${pageContext.request.contextPath}/admin/cita/citas">
                                 <i class="bi bi-calendar-check"></i>
                                 Citas
                             </a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link" href="${pageContext.request.contextPath}/admin/especialidades">
+                            <a class="nav-link" href="${pageContext.request.contextPath}/admin/especialidad/especialidades">
                                 <i class="bi bi-list-check"></i>
                                 Especialidades
                             </a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link" href="${pageContext.request.contextPath}/admin/horarios">
+                            <a class="nav-link" href="${pageContext.request.contextPath}/admin/horario/horarios">
                                 <i class="bi bi-clock"></i>
                                 Horarios
                             </a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link active" href="${pageContext.request.contextPath}/admin/usuarios">
+                            <a class="nav-link active" href="${pageContext.request.contextPath}/admin/usuario/usuarios">
                                 <i class="bi bi-person-gear"></i>
                                 Usuarios
                             </a>
@@ -252,27 +194,15 @@
             <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4 py-4">
                 <!-- Encabezado de página -->
                 <div class="page-header">
-                    <h1>Gestión de Usuarios</h1>
-                    <p>Administra los usuarios del sistema</p>
-                </div>
-
-                <!-- Barra de búsqueda -->
-                <div class="search-box">
-                    <form class="row g-3" action="${pageContext.request.contextPath}/admin/usuario/usuarios" method="get">
-                        <div class="col-md-8">
-                            <div class="input-group">
-                                <input type="text" class="form-control" name="buscar" placeholder="Buscar por nombre, email o rol...">
-                                <button class="btn btn-primary" type="submit">
-                                    <i class="bi bi-search"></i> Buscar
-                                </button>
-                            </div>
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h1>Usuarios</h1>
+                            <p>Gestión de usuarios del sistema</p>
                         </div>
-                        <div class="col-md-4 text-end">
-                            <button type="button" class="btn btn-success" data-bs-toggle="modal" data-bs-target="#usuarioModal">
-                                <i class="bi bi-plus-lg"></i> Nuevo Usuario
-                            </button>
-                        </div>
-                    </form>
+                        <a href="${pageContext.request.contextPath}/admin/usuario/nuevo" class="btn btn-light btn-action">
+                            <i class="bi bi-plus-lg"></i> Nuevo Usuario
+                        </a>
+                    </div>
                 </div>
 
                 <!-- Tabla de usuarios -->
@@ -282,48 +212,52 @@
                             <table class="table table-hover">
                                 <thead>
                                     <tr>
+                                        <th>ID</th>
                                         <th>Usuario</th>
-                                        <th>Email</th>
                                         <th>Rol</th>
                                         <th>Estado</th>
+                                        <th>Último Acceso</th>
                                         <th>Acciones</th>
                                     </tr>
                                 </thead>
                                 <tbody>
                                     <c:forEach items="${usuarios}" var="usuario">
                                         <tr>
+                                            <td>${usuario.id}</td>
+                                            <td>${usuario.username}</td>
+                                            <td>${usuario.rol}</td>
                                             <td>
-                                                <div class="user-info">
-                                                    <div class="user-avatar">
-                                                        ${usuario.nombre.charAt(0)}${usuario.apellido.charAt(0)}
-                                                    </div>
-                                                    <div class="user-details">
-                                                        <span class="user-name">${usuario.nombre} ${usuario.apellido}</span>
-                                                        <span class="user-role">${usuario.rol}</span>
-                                                    </div>
-                                                </div>
-                                            </td>
-                                            <td>${usuario.email}</td>
-                                            <td>
-                                                <span class="role-badge">
-                                                    ${usuario.rol}
-                                                </span>
-                                            </td>
-                                            <td>
-                                                <span class="badge bg-${usuario.activo ? 'success' : 'danger'}">
+                                                <span class="status-badge ${usuario.activo ? 'status-active' : 'status-inactive'}">
                                                     ${usuario.activo ? 'Activo' : 'Inactivo'}
                                                 </span>
                                             </td>
                                             <td>
-                                                <div class="btn-group">
-                                                    <button class="btn btn-sm btn-primary btn-action" onclick="editarUsuario('${usuario.id}')">
+                                                <c:choose>
+                                                    <c:when test="${not empty usuario.ultimoAcceso}">
+                                                        <fmt:formatDate value="${usuario.ultimoAcceso}" pattern="dd/MM/yyyy HH:mm"/>
+                                                    </c:when>
+                                                    <c:otherwise>
+                                                        Nunca
+                                                    </c:otherwise>
+                                                </c:choose>
+                                            </td>
+                                            <td>
+                                                <div class="btn-group" role="group">
+                                                    <a href="${pageContext.request.contextPath}/admin/usuario/${usuario.id}" 
+                                                       class="btn btn-sm btn-info btn-action" 
+                                                       title="Ver detalles">
+                                                        <i class="bi bi-eye"></i>
+                                                    </a>
+                                                    <a href="${pageContext.request.contextPath}/admin/usuario/editar/${usuario.id}" 
+                                                       class="btn btn-sm btn-warning btn-action" 
+                                                       title="Editar">
                                                         <i class="bi bi-pencil"></i>
-                                                    </button>
-                                                    <button class="btn btn-sm btn-danger btn-action" onclick="eliminarUsuario('${usuario.id}')">
+                                                    </a>
+                                                    <button type="button" 
+                                                            class="btn btn-sm btn-danger btn-action" 
+                                                            title="Eliminar"
+                                                            onclick="confirmarEliminacion(${usuario.id})">
                                                         <i class="bi bi-trash"></i>
-                                                    </button>
-                                                    <button class="btn btn-sm btn-warning btn-action" onclick="cambiarEstadoUsuario('${usuario.id}', ${!usuario.activo})">
-                                                        <i class="bi bi-${usuario.activo ? 'person-x' : 'person-check'}"></i>
                                                     </button>
                                                 </div>
                                             </td>
@@ -338,177 +272,57 @@
         </div>
     </div>
 
-    <!-- Modal para crear/editar usuario -->
-    <div class="modal fade" id="usuarioModal" tabindex="-1">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="usuarioModalLabel">Nuevo Usuario</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                </div>
-                <div class="modal-body">
-                    <form id="usuarioForm" class="needs-validation" novalidate>
-                        <input type="hidden" id="usuarioId">
-                        
-                        <div class="mb-3">
-                            <label for="nombre" class="form-label required-field">Nombre</label>
-                            <input type="text" class="form-control" id="nombre" required>
-                            <div class="invalid-feedback">
-                                Por favor ingrese el nombre.
-                            </div>
-                        </div>
-                        
-                        <div class="mb-3">
-                            <label for="apellido" class="form-label required-field">Apellido</label>
-                            <input type="text" class="form-control" id="apellido" required>
-                            <div class="invalid-feedback">
-                                Por favor ingrese el apellido.
-                            </div>
-                        </div>
-                        
-                        <div class="mb-3">
-                            <label for="email" class="form-label required-field">Email</label>
-                            <input type="email" class="form-control" id="email" required>
-                            <div class="invalid-feedback">
-                                Por favor ingrese un email válido.
-                            </div>
-                        </div>
-                        
-                        <div class="mb-3">
-                            <label for="password" class="form-label required-field">Contraseña</label>
-                            <input type="password" class="form-control" id="password" required>
-                            <div class="invalid-feedback">
-                                Por favor ingrese una contraseña.
-                            </div>
-                        </div>
-                        
-                        <div class="mb-3">
-                            <label for="rol" class="form-label required-field">Rol</label>
-                            <select class="form-select" id="rol" required>
-                                <option value="">Seleccione un rol</option>
-                                <option value="ADMIN">Administrador</option>
-                                <option value="DOCTOR">Doctor</option>
-                                <option value="PACIENTE">Paciente</option>
-                            </select>
-                            <div class="invalid-feedback">
-                                Por favor seleccione un rol.
-                            </div>
-                        </div>
-                    </form>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-                    <button type="button" class="btn btn-primary" onclick="guardarUsuario()">Guardar</button>
-                </div>
-            </div>
-        </div>
-    </div>
-
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.7.32/dist/sweetalert2.all.min.js"></script>
     <script>
-        // Función para editar usuario
-        function editarUsuario(id) {
-            fetch('${pageContext.request.contextPath}/admin/usuarios/' + id)
-                .then(response => response.json())
-                .then(usuario => {
-                    document.getElementById('usuarioId').value = usuario.id;
-                    document.getElementById('nombre').value = usuario.nombre;
-                    document.getElementById('apellido').value = usuario.apellido;
-                    document.getElementById('email').value = usuario.email;
-                    document.getElementById('rol').value = usuario.rol;
-                    document.getElementById('password').required = false;
-                    
-                    document.getElementById('usuarioModalLabel').textContent = 'Editar Usuario';
-                    new bootstrap.Modal(document.getElementById('usuarioModal')).show();
-                })
-                .catch(error => {
-                    console.error('Error:', error);
-                    alert('Error al cargar los datos del usuario');
-                });
+        function confirmarEliminacion(id) {
+            Swal.fire({
+                title: '¿Estás seguro?',
+                text: "Esta acción no se puede deshacer",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#d33',
+                cancelButtonColor: '#3085d6',
+                confirmButtonText: 'Sí, eliminar',
+                cancelButtonText: 'Cancelar'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    eliminarUsuario(id);
+                }
+            });
         }
 
-        // Función para eliminar usuario
         function eliminarUsuario(id) {
-            if (confirm('¿Está seguro de eliminar este usuario?')) {
-                fetch('${pageContext.request.contextPath}/admin/usuarios/' + id, {
-                    method: 'DELETE'
-                })
-                .then(response => {
-                    if (response.ok) {
-                        window.location.reload();
-                    } else {
-                        throw new Error('Error al eliminar el usuario');
-                    }
-                })
-                .catch(error => {
-                    console.error('Error:', error);
-                    alert('Error al eliminar el usuario');
-                });
-            }
-        }
-
-        // Función para cambiar estado del usuario
-        function cambiarEstadoUsuario(id, nuevoEstado) {
-            if (confirm(`¿Está seguro de ${nuevoEstado ? 'activar' : 'desactivar'} este usuario?`)) {
-                fetch('${pageContext.request.contextPath}/admin/usuarios/' + id + '/estado', {
-                    method: 'PUT',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({ activo: nuevoEstado })
-                })
-                .then(response => {
-                    if (response.ok) {
-                        window.location.reload();
-                    } else {
-                        throw new Error('Error al cambiar el estado del usuario');
-                    }
-                })
-                .catch(error => {
-                    console.error('Error:', error);
-                    alert('Error al cambiar el estado del usuario');
-                });
-            }
-        }
-
-        // Función para guardar usuario
-        function guardarUsuario() {
-            const form = document.getElementById('usuarioForm');
-            if (!form.checkValidity()) {
-                form.classList.add('was-validated');
-                return;
-            }
-
-            const usuarioData = {
-                id: document.getElementById('usuarioId').value,
-                nombre: document.getElementById('nombre').value,
-                apellido: document.getElementById('apellido').value,
-                email: document.getElementById('email').value,
-                password: document.getElementById('password').value,
-                rol: document.getElementById('rol').value,
-                activo: true
-            };
-
-            const method = usuarioData.id ? 'PUT' : 'POST';
-            const url = '${pageContext.request.contextPath}/admin/usuarios' + (usuarioData.id ? '/' + usuarioData.id : '');
-
-            fetch(url, {
-                method: method,
+            fetch('${pageContext.request.contextPath}/admin/usuario/eliminar/' + id, {
+                method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
-                },
-                body: JSON.stringify(usuarioData)
+                }
             })
-            .then(response => {
-                if (response.ok) {
-                    window.location.reload();
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    Swal.fire({
+                        title: '¡Eliminado!',
+                        text: data.message,
+                        icon: 'success'
+                    }).then(() => {
+                        window.location.reload();
+                    });
                 } else {
-                    throw new Error('Error al guardar el usuario');
+                    Swal.fire({
+                        title: 'Error',
+                        text: data.message,
+                        icon: 'error'
+                    });
                 }
             })
             .catch(error => {
-                console.error('Error:', error);
-                alert('Error al guardar el usuario');
+                Swal.fire({
+                    title: 'Error',
+                    text: 'Ocurrió un error al eliminar el usuario',
+                    icon: 'error'
+                });
             });
         }
     </script>
