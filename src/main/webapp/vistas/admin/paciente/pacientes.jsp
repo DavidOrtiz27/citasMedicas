@@ -81,44 +81,54 @@
             <nav class="col-md-3 col-lg-2 d-md-block sidebar">
                 <div class="position-sticky">
                     <div class="text-center py-4">
-                        <h4 class="text-white">Sistema de Citas</h4>
-                        <p class="text-light opacity-75">Panel de Administración</p>
+                        <h4 class="text-white"><fmt:message key="sidebar.header"/></h4>
+                        <p class="text-light opacity-75"><fmt:message key="sidebar.subtext"/></p>
                     </div>
                     
                     <ul class="nav flex-column px-3">
                         <li class="nav-item">
                             <a class="nav-link" href="${pageContext.request.contextPath}/admin/inicio">
-                                <i class="bi bi-house"></i> Inicio
+                                <i class="bi bi-house"></i>
+                                <fmt:message key="sidebar.home"/>
                             </a>
                         </li>
                         <li class="nav-item">
                             <a class="nav-link active" href="${pageContext.request.contextPath}/admin/paciente/pacientes">
-                                <i class="bi bi-people"></i> Pacientes
+                                <i class="bi bi-people"></i>
+                                <fmt:message key="sidebar.patients"/>
                             </a>
                         </li>
                         <li class="nav-item">
                             <a class="nav-link" href="${pageContext.request.contextPath}/admin/doctor/doctores">
-                                <i class="bi bi-person-badge"></i> Doctores
+                                <i class="bi bi-person-badge"></i>
+                                <fmt:message key="sidebar.doctors"/>
                             </a>
                         </li>
                         <li class="nav-item">
                             <a class="nav-link" href="${pageContext.request.contextPath}/admin/citas/citas">
-                                <i class="bi bi-calendar-check"></i> Citas
+                                <i class="bi bi-calendar-check"></i>
+                                <fmt:message key="sidebar.appointments"/>
                             </a>
                         </li>
                         <li class="nav-item">
                             <a class="nav-link" href="${pageContext.request.contextPath}/admin/especialidad/especialidades">
-                                <i class="bi bi-list-check"></i> Especialidades
+                                <i class="bi bi-list-check"></i>
+                                <fmt:message key="sidebar.specialties"/>
+                               
                             </a>
                         </li>
                         <li class="nav-item">
                             <a class="nav-link" href="${pageContext.request.contextPath}/admin/horario/horarios">
-                                <i class="bi bi-clock"></i> Horarios
+                                <i class="bi bi-clock"></i>
+                                <fmt:message key="sidebar.schedules"/>
+                                
                             </a>
                         </li>
                         <li class="nav-item">
                             <a class="nav-link" href="${pageContext.request.contextPath}/admin/usuario/usuarios">
-                                <i class="bi bi-people-fill"></i> Usuarios
+                                <i class="bi bi-people-fill"></i>
+                                <fmt:message key="sidebar.appointments"/>
+                                
                             </a>
                         </li>
                     </ul>
@@ -129,8 +139,8 @@
             <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4 py-4">
                 <!-- Encabezado -->
                 <div class="page-header">
-                    <h1>Gestión de Pacientes</h1>
-                    <p>Administra los pacientes registrados en el sistema</p>
+                    <h1><fmt:message key="patients.header"/></h1>
+                    <p><fmt:message key="patients.subtext"/></p>
                 </div>
 
                 <!-- Mensajes de alerta -->
@@ -160,7 +170,7 @@
                 <!-- Botón Nuevo Paciente -->
                 <div class="mb-4">
                     <a href="${pageContext.request.contextPath}/admin/paciente/pacientes/nuevo" class="btn btn-primary">
-                        <i class="bi bi-plus-circle"></i> Nuevo Paciente
+                        <i class="bi bi-plus-circle"></i> <fmt:message key="patients.newPatient.button"/>
                     </a>
                 </div>
 
@@ -172,12 +182,12 @@
                                 <thead>
                                     <tr>
                                         <th>ID</th>
-                                        <th>DNI</th>
-                                        <th>Nombres</th>
-                                        <th>Apellidos</th>
-                                        <th>Email</th>
-                                        <th>Teléfono</th>
-                                        <th>Acciones</th>
+                                        <th><fmt:message key="form.fields.id"/></th>
+                                        <th><fmt:message key="form.fields.names"/></th>
+                                        <th><fmt:message key="form.fields.lastname"/></th>
+                                        <th><fmt:message key="form.fields.email"/></th>
+                                        <th><fmt:message key="form.fields.phone"/></th>
+                                        <th><fmt:message key="form.fields.actions"/></th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -216,7 +226,7 @@
                                                             <div class="modal-header bg-danger text-white">
                                                                 <h5 class="modal-title" id="eliminarModalLabel${paciente.id}">
                                                                     <i class="bi bi-exclamation-triangle me-2"></i>
-                                                                    Confirmar Eliminación
+                                                                    <fmt:message key="form.fields.id"/><fmt:message key="btn.confirm.deletion"/>
                                                                 </h5>
                                                                 <button type="button" 
                                                                         class="btn-close btn-close-white" 
@@ -226,34 +236,34 @@
                                                             <div class="modal-body">
                                                                 <div class="alert alert-danger mb-3">
                                                                     <i class="bi bi-exclamation-circle me-2"></i>
-                                                                    Esta acción no se puede deshacer.
+                                                                    <fmt:message key="btn.confirm.deletion"/>
                                                                 </div>
                                                                 
                                                                 <div class="card mb-3">
                                                                     <div class="card-header bg-light">
-                                                                        <h6 class="mb-0">Información del Paciente</h6>
+                                                                        <h6 class="mb-0"><fmt:message key="patient.fullinfo"/></h6>
                                                                     </div>
                                                                     <div class="card-body">
                                                                         <div class="row">
                                                                             <div class="col-md-6 mb-2">
-                                                                                <label class="fw-bold">Nombre Completo:</label>
+                                                                                <label class="fw-bold"><fmt:message key="patient.fullname"/>:</label>
                                                                                 <p>${paciente.nombres} ${paciente.apellidos}</p>
                                                                             </div>
                                                                             <div class="col-md-6 mb-2">
-                                                                                <label class="fw-bold">DNI:</label>
+                                                                                <label class="fw-bold"><fmt:message key="form.fields.id"/>:</label>
                                                                                 <p>${paciente.dni}</p>
                                                                             </div>
                                                                             <div class="col-md-6 mb-2">
-                                                                                <label class="fw-bold">Email:</label>
+                                                                                <label class="fw-bold"><fmt:message key="form.fields.email"/>:</label>
                                                                                 <p>${paciente.email}</p>
                                                                             </div>
                                                                             <div class="col-md-6 mb-2">
-                                                                                <label class="fw-bold">Teléfono:</label>
+                                                                                <label class="fw-bold"><fmt:message key="form.fields.phone"/>:</label>
                                                                                 <p>${paciente.telefono}</p>
                                                                             </div>
                                                                             <c:if test="${not empty paciente.direccion}">
                                                                                 <div class="col-12 mb-2">
-                                                                                    <label class="fw-bold">Dirección:</label>
+                                                                                    <label class="fw-bold"><fmt:message key="patient.address"/>:</label>
                                                                                     <p>${paciente.direccion}</p>
                                                                                 </div>
                                                                             </c:if>
@@ -263,7 +273,7 @@
                                                                 
                                                                 <p class="text-center mb-0">
                                                                     <i class="bi bi-question-circle me-2"></i>
-                                                                    ¿Está seguro que desea eliminar este paciente?
+                                                                    <fmt:message key="patients.delete.warningtwo"/>
                                                                 </p>
                                                             </div>
                                                             <div class="modal-footer">
@@ -271,7 +281,7 @@
                                                                         class="btn btn-secondary" 
                                                                         data-bs-dismiss="modal">
                                                                     <i class="bi bi-x-circle me-1"></i>
-                                                                    Cancelar
+                                                                    <fmt:message key="form.fields.cancel"/>
                                                                 </button>
                                                                 <form action="${pageContext.request.contextPath}/admin/paciente/pacientes/eliminar" 
                                                                       method="POST" 
@@ -280,7 +290,7 @@
                                                                     <button type="submit" 
                                                                             class="btn btn-danger">
                                                                         <i class="bi bi-trash me-1"></i>
-                                                                        Eliminar Paciente
+                                                                        <fmt:message key="btn.confirm.deletion"/>
                                                                     </button>
                                                                 </form>
                                                             </div>

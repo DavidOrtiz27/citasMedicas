@@ -251,7 +251,7 @@
     <section class="hero-section text-center">
         <div class="container">
             <h1> <fmt:message key="index.header" /></h1>
-            <p class="lead"> <fmt:message key="index.lead " /></p>
+            <p class="lead"> <fmt:message key="index.lead" /></p>
             <div class="d-flex justify-content-center gap-4">
                 <a href="${pageContext.request.contextPath}/vistas/publico/solicitarCita.jsp" 
                    class="btn btn-primary btn-hero">

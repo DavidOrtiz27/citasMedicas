@@ -19,7 +19,7 @@
     <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
         <div class="container">
             <a class="navbar-brand" href="${pageContext.request.contextPath}/admin/dashboard">
-                <i class="bi bi-hospital"></i> Sistema de Citas Médicas
+                <i class="bi bi-hospital"></i> <fmt:message key="report.title"/> Sistema de Citas Médicas
             </a>
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
                 <span class="navbar-toggler-icon"></span>

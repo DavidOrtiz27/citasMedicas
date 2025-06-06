@@ -5,7 +5,7 @@ import java.sql.DriverManager;
 import java.sql.SQLException;
 
 public class DatabaseUtil {
-    private static final String DB_URL = "jdbc:mysql://localhost:3307/gestor_citas";
+    private static final String DB_URL = "jdbc:mysql://localhost:3306/gestor_citas";
     private static final String DB_USER = "root";
     private static final String DB_PASSWORD = "";
 
