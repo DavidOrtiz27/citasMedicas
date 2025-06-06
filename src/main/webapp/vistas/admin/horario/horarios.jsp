@@ -465,23 +465,25 @@
             });
         }
 
-        // Cargar doctores al iniciar
+        // Cargar hroarios al iniciar
         window.addEventListener('load', function() {
-            fetch('${pageContext.request.contextPath}/admin/doctores')
-                .then(response => response.json())
-                .then(doctores => {
-                    const select = document.getElementById('doctorId');
-                    doctores.forEach(doctor => {
-                        const option = document.createElement('option');
-                        option.value = doctor.id;
-                        option.textContent = 'Dr. ' + doctor.nombres + ' ' + doctor.apellidos;
-                        select.appendChild(option);
-                    });
-                })
-                .catch(error => {
-                    console.error('Error:', error);
-                    alert('Error al cargar los doctores');
-                });
+            fetch('${pageContext.request.contextPath}/admin/horario/horarios')
+            .then(response => response.json())
+            .catch(error => {console.log(error)})
+            //fetch('${pageContext.request.contextPath}/admin/horario/horarios')
+            //    .then(response => response.json())
+            //    .then(doctores => {
+            //        const select = document.getElementById('doctorId');
+            //        doctores.forEach(doctor => {
+            //            const option = document.createElement('option');
+            //            option.value = doctor.id;
+            //            option.textContent = 'Dr. ' + doctor.nombres + ' ' + doctor.apellidos;
+            //            select.appendChild(option);
+            //        });
+            //    })
+            //    .catch(error => {
+            //        console.error('Error:', error);
+            //    });
         });
     </script>
 </body>
