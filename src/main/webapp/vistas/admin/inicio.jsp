@@ -209,6 +209,12 @@
                                 Usuarios
                             </a>
                         </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="${pageContext.request.contextPath}/logout">
+                                <i class="bi bi-box-arrow-right"></i>
+                                Cerrar Sesión
+                            </a>
+                        </li>
                     </ul>
                 </div>
             </nav>

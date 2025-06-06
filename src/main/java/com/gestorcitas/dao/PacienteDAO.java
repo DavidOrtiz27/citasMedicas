@@ -163,54 +163,38 @@ public class PacienteDAO {
     }
 
     public boolean eliminarPaciente(int id) throws SQLException {
-        Connection conn = null;
-        try {
-            conn = DatabaseUtil.getConnection();
+        String sql = "DELETE FROM pacientes WHERE id = ?";
+        
+        try (Connection conn = DatabaseUtil.getConnection()) {
             conn.setAutoCommit(false); // Iniciar transacción
             
-            // Primero eliminar las citas asociadas
-            eliminarCitasPaciente(conn, id);
-            
-            // Luego eliminar el paciente
-            String sql = "DELETE FROM pacientes WHERE id = ?";
-            try (PreparedStatement stmt = conn.prepareStatement(sql)) {
-                stmt.setInt(1, id);
-                int filasAfectadas = stmt.executeUpdate();
+            try {
+                // Primero eliminar las citas asociadas
+                String sqlCitas = "DELETE FROM citas WHERE paciente_id = ?";
+                try (PreparedStatement stmtCitas = conn.prepareStatement(sqlCitas)) {
+                    stmtCitas.setInt(1, id);
+                    stmtCitas.executeUpdate();
+                }
                 
-                if (filasAfectadas > 0) {
-                    conn.commit(); // Confirmar transacción
-                    return true;
-                } else {
-                    conn.rollback(); // Revertir transacción
-                    return false;
+                // Luego eliminar el paciente
+                try (PreparedStatement stmt = conn.prepareStatement(sql)) {
+                    stmt.setInt(1, id);
+                    int filasAfectadas = stmt.executeUpdate();
+                    
+                    if (filasAfectadas > 0) {
+                        conn.commit(); // Confirmar transacción
+                        return true;
+                    } else {
+                        conn.rollback(); // Revertir transacción
+                        return false;
+                    }
                 }
+            } catch (SQLException e) {
+                conn.rollback(); // Revertir transacción en caso de error
+                throw e;
+            } finally {
+                conn.setAutoCommit(true); // Restaurar autocommit
             }
-        } catch (SQLException e) {
-            if (conn != null) {
-                try {
-                    conn.rollback(); // Revertir transacción en caso de error
-                } catch (SQLException ex) {
-                    ex.printStackTrace();
-                }
-            }
-            throw e;
-        } finally {
-            if (conn != null) {
-                try {
-                    conn.setAutoCommit(true); // Restaurar autocommit
-                    conn.close();
-                } catch (SQLException e) {
-                    e.printStackTrace();
-                }
-            }
-        }
-    }
-
-    private void eliminarCitasPaciente(Connection conn, int pacienteId) throws SQLException {
-        String sql = "DELETE FROM citas WHERE paciente_id = ?";
-        try (PreparedStatement stmt = conn.prepareStatement(sql)) {
-            stmt.setInt(1, pacienteId);
-            stmt.executeUpdate();
         }
     }
 
@@ -265,11 +249,18 @@ public class PacienteDAO {
     
     public int contarTotal() throws SQLException {
         String sql = "SELECT COUNT(*) FROM pacientes";
-        try (Connection conn = DatabaseUtil.getConnection();
-             PreparedStatement stmt = conn.prepareStatement(sql);
-             ResultSet rs = stmt.executeQuery()) {
-            if (rs.next()) {
-                return rs.getInt(1);
+        Connection conn = null;
+        try {
+            conn = DatabaseUtil.getConnection();
+            try (PreparedStatement stmt = conn.prepareStatement(sql);
+                 ResultSet rs = stmt.executeQuery()) {
+                if (rs.next()) {
+                    return rs.getInt(1);
+                }
+            }
+        } finally {
+            if (conn != null) {
+                DatabaseUtil.releaseConnection(conn);
             }
         }
         return 0;

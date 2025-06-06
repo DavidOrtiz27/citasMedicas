@@ -2,6 +2,7 @@ package com.gestorcitas.controlador;
 
 import java.io.IOException;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.List;
 
 import javax.servlet.ServletException;
@@ -27,24 +28,56 @@ public class InicioServlet extends HttpServlet {
     
     @Override
     public void init() throws ServletException {
-        pacienteDAO = new PacienteDAO();
-        doctorDAO = new DoctorDAO();
-        especialidadDAO = new EspecialidadDAO();
-        citaDAO = new CitaDAO();
+        try {
+            pacienteDAO = new PacienteDAO();
+            doctorDAO = new DoctorDAO();
+            especialidadDAO = new EspecialidadDAO();
+            citaDAO = new CitaDAO();
+        } catch (Exception e) {
+            throw new ServletException("Error al inicializar los DAOs", e);
+        }
     }
     
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response) 
             throws ServletException, IOException {
+        int totalPacientes = 0;
+        int totalDoctores = 0;
+        int totalEspecialidades = 0;
+        int citasHoy = 0;
+        List<Cita> proximasCitas = new ArrayList<>();
+        
         try {
-            // Obtener estadísticas
-            int totalPacientes = pacienteDAO.contarTotal();
-            int totalDoctores = doctorDAO.contarTotal();
-            int totalEspecialidades = especialidadDAO.contarTotal();
-            int citasHoy = citaDAO.contarCitasHoy();
+            // Obtener estadísticas con manejo individual de errores
+            try {
+                totalPacientes = pacienteDAO.contarTotal();
+            } catch (SQLException e) {
+                request.setAttribute("errorPacientes", "Error al obtener total de pacientes: " + e.getMessage());
+            }
             
-            // Obtener próximas citas
-            List<Cita> proximasCitas = citaDAO.listarProximasCitas();
+            try {
+                totalDoctores = doctorDAO.contarTotal();
+            } catch (SQLException e) {
+                request.setAttribute("errorDoctores", "Error al obtener total de doctores: " + e.getMessage());
+            }
+            
+            try {
+                totalEspecialidades = especialidadDAO.contarTotal();
+            } catch (SQLException e) {
+                request.setAttribute("errorEspecialidades", "Error al obtener total de especialidades: " + e.getMessage());
+            }
+            
+            try {
+                citasHoy = citaDAO.contarCitasHoy();
+            } catch (SQLException e) {
+                request.setAttribute("errorCitasHoy", "Error al obtener citas de hoy: " + e.getMessage());
+            }
+            
+            try {
+                proximasCitas = citaDAO.listarProximasCitas();
+            } catch (SQLException e) {
+                request.setAttribute("errorProximasCitas", "Error al obtener próximas citas: " + e.getMessage());
+            }
             
             // Establecer atributos
             request.setAttribute("totalPacientes", totalPacientes);
@@ -56,8 +89,9 @@ public class InicioServlet extends HttpServlet {
             // Redirigir a la vista
             request.getRequestDispatcher("/vistas/admin/inicio.jsp").forward(request, response);
             
-        } catch (SQLException e) {
-            throw new ServletException("Error al cargar la página de inicio", e);
+        } catch (Exception e) {
+            request.setAttribute("errorGeneral", "Error al cargar la página de inicio: " + e.getMessage());
+            request.getRequestDispatcher("/vistas/admin/inicio.jsp").forward(request, response);
         }
     }
 } 

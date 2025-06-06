@@ -3,6 +3,8 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Login - Sistema de Citas Médicas</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.7.2/font/bootstrap-icons.css" rel="stylesheet">
@@ -18,48 +20,62 @@
         }
 
         body {
-            min-height: 100vh;
-            background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+            background: linear-gradient(135deg, #2c3e50, #3498db);
+            height: 100vh;
             display: flex;
             align-items: center;
             justify-content: center;
-            padding: 20px;
         }
 
         .login-container {
-            width: 100%;
-            max-width: 450px;
-            background-color: rgba(255, 255, 255, 0.95);
+            background: white;
+            padding: 2rem;
             border-radius: 1rem;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
-            padding: 40px;
-            transition: transform 0.3s ease;
-        }
-
-        .login-container:hover {
-            transform: translateY(-5px);
+            box-shadow: 0 0.5rem 1rem rgba(0,0,0,0.2);
+            width: 100%;
+            max-width: 400px;
         }
 
         .login-header {
             text-align: center;
-            margin-bottom: 30px;
+            margin-bottom: 2rem;
         }
 
-        .login-header i {
-            font-size: 3rem;
-            color: var(--accent-color);
-            margin-bottom: 15px;
-        }
-
-        .login-header h2 {
-            color: var(--primary-color);
-            font-weight: 600;
-            margin-bottom: 5px;
+        .login-header h1 {
+            color: #2c3e50;
+            font-size: 1.8rem;
+            margin-bottom: 0.5rem;
         }
 
         .login-header p {
-            color: var(--secondary-color);
-            font-size: 0.9rem;
+            color: #7f8c8d;
+            margin: 0;
+        }
+
+        .form-control {
+            border-radius: 0.5rem;
+            padding: 0.75rem 1rem;
+        }
+
+        .btn-login {
+            background: #3498db;
+            border: none;
+            border-radius: 0.5rem;
+            padding: 0.75rem;
+            width: 100%;
+            color: white;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+
+        .btn-login:hover {
+            background: #2980b9;
+            transform: translateY(-2px);
+        }
+
+        .alert {
+            border-radius: 0.5rem;
+            margin-bottom: 1rem;
         }
 
         .form-floating {
@@ -99,27 +115,6 @@
             transform: scale(1.02);
         }
 
-        .btn-login {
-            background: linear-gradient(135deg, var(--accent-color) 0%, var(--primary-color) 100%);
-            border: none;
-            padding: 12px;
-            font-weight: 600;
-            letter-spacing: 0.5px;
-            border-radius: 0.5rem;
-            transition: all 0.3s ease;
-        }
-
-        .btn-login:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(52, 152, 219, 0.4);
-        }
-
-        .alert {
-            border-radius: 0.5rem;
-            border: none;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-        }
-
         .alert-danger {
             background-color: var(--danger-color);
             color: white;
@@ -133,30 +128,40 @@
 <body>
     <div class="login-container">
         <div class="login-header">
-            <i class="bi bi-hospital"></i>
-            <h2>Sistema de Citas Médicas</h2>
+            <h1>Sistema de Citas Médicas</h1>
             <p>Ingrese sus credenciales para continuar</p>
         </div>
         
-        <c:if test="${not empty error}">
-            <div class="alert alert-danger alert-dismissible fade show" role="alert">
-                <i class="bi bi-exclamation-triangle-fill"></i>
-                ${error}
-                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        <% if (request.getParameter("error") != null) { %>
+            <div class="alert alert-danger">
+                <% 
+                    String error = request.getParameter("error");
+                    switch (error) {
+                        case "credenciales_invalidas":
+                            out.print("Usuario o contraseña incorrectos");
+                            break;
+                        case "rol_invalido":
+                            out.print("Rol de usuario no válido");
+                            break;
+                        case "error_sistema":
+                            out.print("Error del sistema. Por favor, intente más tarde");
+                            break;
+                        default:
+                            out.print("Error al iniciar sesión");
+                    }
+                %>
             </div>
-        </c:if>
-
+        <% } %>
+        
         <form action="${pageContext.request.contextPath}/login" method="post">
-            <div class="form-floating">
-                <input type="text" class="form-control" id="username" name="username" placeholder="Usuario" required>
-                <label for="username"><i class="bi bi-person me-2"></i>Usuario</label>
+            <div class="mb-3">
+                <label for="username" class="form-label">Usuario</label>
+                <input type="text" class="form-control" id="username" name="username" required>
             </div>
-            
-            <div class="form-floating">
-                <input type="password" class="form-control" id="password" name="password" placeholder="Contraseña" required>
-                <label for="password"><i class="bi bi-lock me-2"></i>Contraseña</label>
+            <div class="mb-3">
+                <label for="password" class="form-label">Contraseña</label>
+                <input type="password" class="form-control" id="password" name="password" required>
             </div>
-            
             <div class="captcha-container">
                 <img src="${pageContext.request.contextPath}/captcha" 
                      class="captcha-image mb-3" 
@@ -168,13 +173,10 @@
                 </div>
                 <small class="text-muted">Haga clic en la imagen para actualizar el código</small>
             </div>
-            
-            <button type="submit" class="btn btn-primary btn-login w-100">
-                <i class="bi bi-box-arrow-in-right me-2"></i>Iniciar Sesión
-            </button>
+            <button type="submit" class="btn btn-login">Iniciar Sesión</button>
         </form>
     </div>
-
+    
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>

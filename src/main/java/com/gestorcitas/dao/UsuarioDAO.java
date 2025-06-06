@@ -1,35 +1,31 @@
 package com.gestorcitas.dao;
 
-import com.gestorcitas.modelo.Usuario;
-import com.gestorcitas.util.DatabaseUtil;
-
-import java.sql.*;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
 
-public class UsuarioDAO {
-	private Connection conexion;
+import com.gestorcitas.modelo.Usuario;
+import com.gestorcitas.util.DatabaseUtil;
 
-	public UsuarioDAO() {
-		try {
-			this.conexion = DatabaseUtil.getConnection();
-		} catch (SQLException e) {
-			e.printStackTrace();
-		}
-	}
+public class UsuarioDAO {
 
 	public Usuario validarUsuario(String username, String password) throws SQLException {
 		String sql = "SELECT * FROM usuarios WHERE username = ? AND password = ? AND activo = true";
+		Usuario usuario = null;
 
-		try (Connection conn = conexion;
-		     PreparedStatement stmt = conn.prepareStatement(sql)) {
+		try (Connection conn = DatabaseUtil.getConnection();
+			 PreparedStatement stmt = conn.prepareStatement(sql)) {
 
 			stmt.setString(1, username);
 			stmt.setString(2, password); // En producción, usar hash de contraseña
 
 			try (ResultSet rs = stmt.executeQuery()) {
 				if (rs.next()) {
-					Usuario usuario = new Usuario();
+					usuario = new Usuario();
 					usuario.setId(rs.getInt("id"));
 					usuario.setUsername(rs.getString("username"));
 					usuario.setPassword(rs.getString("password"));
@@ -40,19 +36,17 @@ public class UsuarioDAO {
 
 					// Actualizar último acceso
 					actualizarUltimoAcceso(usuario.getId());
-
-					return usuario;
 				}
 			}
 		}
-		return null;
+		return usuario;
 	}
 
 	private boolean actualizarUltimoAcceso(int usuarioId) throws SQLException {
 		String sql = "UPDATE usuarios SET ultimo_acceso = NOW() WHERE id = ?";
 
-		try (Connection conn = conexion;
-		     PreparedStatement stmt = conn.prepareStatement(sql)) {
+		try (Connection conn = DatabaseUtil.getConnection();
+			 PreparedStatement stmt = conn.prepareStatement(sql)) {
 
 			stmt.setInt(1, usuarioId);
 			return stmt.executeUpdate() > 0;
@@ -64,8 +58,8 @@ public class UsuarioDAO {
 		String sql = "SELECT * FROM usuarios ORDER BY id";
 
 		try (Connection conn = DatabaseUtil.getConnection();
-		     Statement stmt = conn.createStatement();
-		     ResultSet rs = stmt.executeQuery(sql)) {
+			 Statement stmt = conn.createStatement();
+			 ResultSet rs = stmt.executeQuery(sql)) {
 
 			while (rs.next()) {
 				Usuario usuario = new Usuario();
@@ -86,7 +80,7 @@ public class UsuarioDAO {
 		String sql = "SELECT * FROM usuarios WHERE id = ?";
 
 		try (Connection conn = DatabaseUtil.getConnection();
-		     PreparedStatement stmt = conn.prepareStatement(sql)) {
+			 PreparedStatement stmt = conn.prepareStatement(sql)) {
 
 			stmt.setInt(1, id);
 
@@ -111,7 +105,7 @@ public class UsuarioDAO {
 		String sql = "INSERT INTO usuarios (username, password, rol, activo, fecha_creacion) VALUES (?, ?, ?, ?, NOW())";
 
 		try (Connection conn = DatabaseUtil.getConnection();
-		     PreparedStatement stmt = conn.prepareStatement(sql)) {
+			 PreparedStatement stmt = conn.prepareStatement(sql)) {
 
 			stmt.setString(1, usuario.getUsername());
 			stmt.setString(2, usuario.getPassword());
@@ -126,7 +120,7 @@ public class UsuarioDAO {
 		String sql = "UPDATE usuarios SET username = ?, password = ?, rol = ?, activo = ? WHERE id = ?";
 
 		try (Connection conn = DatabaseUtil.getConnection();
-		     PreparedStatement stmt = conn.prepareStatement(sql)) {
+			 PreparedStatement stmt = conn.prepareStatement(sql)) {
 
 			stmt.setString(1, usuario.getUsername());
 			stmt.setString(2, usuario.getPassword());
@@ -142,7 +136,7 @@ public class UsuarioDAO {
 		String sql = "DELETE FROM usuarios WHERE id = ?";
 
 		try (Connection conn = DatabaseUtil.getConnection();
-		     PreparedStatement stmt = conn.prepareStatement(sql)) {
+			 PreparedStatement stmt = conn.prepareStatement(sql)) {
 
 			stmt.setInt(1, id);
 			return stmt.executeUpdate() > 0;
@@ -150,12 +144,10 @@ public class UsuarioDAO {
 	}
 
 	private boolean usuarioEnUso(int usuarioId) throws SQLException {
-		// Aquí puedes agregar verificaciones adicionales
-		// Por ejemplo, verificar si el usuario tiene citas asociadas
 		String sql = "SELECT COUNT(*) FROM citas WHERE usuario_id = ?";
 
-		try (Connection conn = conexion;
-		     PreparedStatement stmt = conn.prepareStatement(sql)) {
+		try (Connection conn = DatabaseUtil.getConnection();
+			 PreparedStatement stmt = conn.prepareStatement(sql)) {
 
 			stmt.setInt(1, usuarioId);
 
@@ -172,7 +164,7 @@ public class UsuarioDAO {
 		String sql = "SELECT COUNT(*) FROM usuarios WHERE username = ?";
 
 		try (Connection conn = DatabaseUtil.getConnection();
-		     PreparedStatement stmt = conn.prepareStatement(sql)) {
+			 PreparedStatement stmt = conn.prepareStatement(sql)) {
 
 			stmt.setString(1, username);
 
