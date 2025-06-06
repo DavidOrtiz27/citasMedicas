@@ -95,7 +95,7 @@ public class PacienteDAO {
         return null;
     }
 
-    public void agregarPaciente(Paciente paciente) throws SQLException {
+    public boolean agregarPaciente(Paciente paciente) throws SQLException {
         String sql = "INSERT INTO pacientes (dni, nombres, apellidos, fecha_nacimiento, genero, direccion, telefono, email) " +
                     "VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
         
@@ -118,17 +118,21 @@ public class PacienteDAO {
             stmt.setString(7, paciente.getTelefono());
             stmt.setString(8, paciente.getEmail());
             
-            stmt.executeUpdate();
+            int filasAfectadas = stmt.executeUpdate();
             
-            try (ResultSet generatedKeys = stmt.getGeneratedKeys()) {
-                if (generatedKeys.next()) {
-                    paciente.setId(generatedKeys.getInt(1));
+            if (filasAfectadas > 0) {
+                try (ResultSet generatedKeys = stmt.getGeneratedKeys()) {
+                    if (generatedKeys.next()) {
+                        paciente.setId(generatedKeys.getInt(1));
+                        return true;
+                    }
                 }
             }
+            return false;
         }
     }
 
-    public void actualizarPaciente(Paciente paciente) throws SQLException {
+    public boolean actualizarPaciente(Paciente paciente) throws SQLException {
         String sql = "UPDATE pacientes SET dni = ?, nombres = ?, apellidos = ?, " +
                     "fecha_nacimiento = ?, genero = ?, direccion = ?, telefono = ?, email = ? " +
                     "WHERE id = ?";
@@ -153,7 +157,8 @@ public class PacienteDAO {
             stmt.setString(8, paciente.getEmail());
             stmt.setInt(9, paciente.getId());
             
-            stmt.executeUpdate();
+            int filasAfectadas = stmt.executeUpdate();
+            return filasAfectadas > 0;
         }
     }
 

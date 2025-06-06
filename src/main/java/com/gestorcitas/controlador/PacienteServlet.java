@@ -18,18 +18,16 @@ import com.gestorcitas.dao.PacienteDAO;
 import com.gestorcitas.modelo.Paciente;
 import com.google.gson.Gson;
 
-@WebServlet(name = "PacienteServlet", urlPatterns = {"/admin/paciente/pacientes",           // GET - Listar pacientes
-		"/admin/paciente/pacientes/nuevo",     // GET - Mostrar formulario nuevo
-		"/admin/paciente/pacientes/editar",    // GET - Mostrar formulario editar
-		"/admin/paciente/pacientes/guardar",   // POST - Crear paciente
-		"/admin/paciente/pacientes/actualizar",// POST - Actualizar paciente
-		"/admin/paciente/pacientes/eliminar"   // POST - Eliminar paciente
+@WebServlet(urlPatterns = {
+    "/admin/paciente/pacientes",      // GET: Listar pacientes
+    "/admin/paciente/crear",          // GET/POST: Crear paciente
+    "/admin/paciente/editar/*",       // GET/POST: Editar paciente
+    "/admin/paciente/eliminar/*",     // POST: Eliminar paciente
+    "/admin/paciente/*"               // GET: Ver detalles de paciente
 })
 public class PacienteServlet extends HttpServlet {
 	private static final long serialVersionUID = 1L;
-
 	private static final SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd");
-
 	private PacienteDAO pacienteDAO;
 
 	@Override
@@ -38,55 +36,65 @@ public class PacienteServlet extends HttpServlet {
 	}
 
 	@Override
-	protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-		String accion = request.getParameter("accion");
-		String termino = request.getParameter("termino");
+	protected void doGet(HttpServletRequest request, HttpServletResponse response) 
+			throws ServletException, IOException {
+		String requestURI = request.getRequestURI();
+		String contextPath = request.getContextPath();
+		String path = requestURI.substring(contextPath.length());
+		
+		System.out.println("doGet - requestURI: " + requestURI);
+		System.out.println("doGet - contextPath: " + contextPath);
+		System.out.println("doGet - path: " + path);
 		
 		try {
-			if (termino != null && !termino.isEmpty()) {
-				// Buscar pacientes por DNI o nombre
-				buscarPacientes(request, response);
-			} else if ("crear".equals(accion)) {
-				mostrarFormularioCreacion(request, response);
-			} else if ("editar".equals(accion)) {
-				mostrarFormularioEdicion(request, response);
-			} else {
+			if (path.equals("/admin/paciente/pacientes")) {
 				listarPacientes(request, response);
+			} else if (path.equals("/admin/paciente/crear")) {
+				mostrarFormularioCreacion(request, response);
+			} else if (path.matches("/admin/paciente/editar/\\d+")) {
+				mostrarFormularioEdicion(request, response);
+			} else if (path.matches("/admin/paciente/\\d+")) {
+				verDetallesPaciente(request, response);
+			} else {
+				response.sendError(HttpServletResponse.SC_NOT_FOUND);
 			}
 		} catch (SQLException e) {
 			e.printStackTrace();
-			request.setAttribute("error", "Error al procesar la solicitud: " + e.getMessage());
-			request.getRequestDispatcher("/vistas/admin/pacientes/pacientes.jsp").forward(request, response);
+			request.getSession().setAttribute("error", "Error al procesar la solicitud: " + e.getMessage());
+			response.sendRedirect(request.getContextPath() + "/admin/paciente/pacientes");
 		}
 	}
 
 	@Override
-	protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-		String servletPath = request.getServletPath();
-		out.println("Servlet path: " + servletPath);
-
+	protected void doPost(HttpServletRequest request, HttpServletResponse response) 
+			throws ServletException, IOException {
+		String requestURI = request.getRequestURI();
+		String contextPath = request.getContextPath();
+		String path = requestURI.substring(contextPath.length());
+		
+		System.out.println("doPost - requestURI: " + requestURI);
+		System.out.println("doPost - contextPath: " + contextPath);
+		System.out.println("doPost - path: " + path);
+		
 		try {
-			if (servletPath.equals("/admin/paciente/pacientes/guardar")) {
+			if (path.equals("/admin/paciente/crear")) {
 				crearPaciente(request, response);
-			} else if (servletPath.equals("/admin/paciente/pacientes/actualizar")) {
-				// Actualizar paciente
+			} else if (path.matches("/admin/paciente/editar/\\d+")) {
 				actualizarPaciente(request, response);
-				out.println("Se ha actualizado el paciente");
-
-
-			} else if (servletPath.equals("/admin/paciente/pacientes/eliminar")) {
+			} else if (path.matches("/admin/paciente/eliminar/\\d+")) {
 				eliminarPaciente(request, response);
 			} else {
-				response.sendRedirect(request.getContextPath() + "/admin/paciente/pacientes");
+				response.sendError(HttpServletResponse.SC_NOT_FOUND);
 			}
 		} catch (SQLException e) {
 			e.printStackTrace();
-			request.setAttribute("error", "Error al procesar la solicitud: " + e.getMessage());
-			request.getRequestDispatcher("/vistas/admin/paciente/pacientes.jsp").forward(request, response);
+			request.getSession().setAttribute("error", "Error al procesar la solicitud: " + e.getMessage());
+			response.sendRedirect(request.getContextPath() + "/admin/paciente/pacientes");
 		}
 	}
 
-	private void listarPacientes(HttpServletRequest request, HttpServletResponse response) throws SQLException, ServletException, IOException {
+	private void listarPacientes(HttpServletRequest request, HttpServletResponse response) 
+			throws SQLException, ServletException, IOException {
 		String buscar = request.getParameter("buscar");
 		List<Paciente> pacientes;
 
@@ -100,32 +108,43 @@ public class PacienteServlet extends HttpServlet {
 		request.getRequestDispatcher("/vistas/admin/paciente/pacientes.jsp").forward(request, response);
 	}
 
-	private void mostrarFormularioCreacion(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+	private void mostrarFormularioCreacion(HttpServletRequest request, HttpServletResponse response) 
+			throws ServletException, IOException {
 		request.getRequestDispatcher("/vistas/admin/paciente/nuevo.jsp").forward(request, response);
 	}
 
-	private void mostrarFormularioEdicion(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException, SQLException {
-		int id = Integer.parseInt(request.getParameter("id"));
+	private void mostrarFormularioEdicion(HttpServletRequest request, HttpServletResponse response) 
+			throws ServletException, IOException, SQLException {
+		String path = request.getRequestURI().substring(request.getContextPath().length());
+		String idStr = path.substring("/admin/paciente/editar/".length());
+		int id = Integer.parseInt(idStr);
+		
 		Paciente paciente = pacienteDAO.obtenerPaciente(id);
 		if (paciente != null) {
 			request.setAttribute("paciente", paciente);
 			request.getRequestDispatcher("/vistas/admin/paciente/editar.jsp").forward(request, response);
-			out.println("Se ha mostrado el formulario de edición");
 		} else {
-			response.sendRedirect(request.getContextPath() + "/admin/paciente/pacientes");
+			response.sendError(HttpServletResponse.SC_NOT_FOUND);
 		}
 	}
 
-	private void buscarPacientes(HttpServletRequest request, HttpServletResponse response) throws SQLException, IOException {
-		String termino = request.getParameter("termino");
-		List<Paciente> pacientes = pacienteDAO.buscarPorTermino(termino);
+	private void verDetallesPaciente(HttpServletRequest request, HttpServletResponse response) 
+			throws SQLException, ServletException, IOException {
+		String path = request.getRequestURI().substring(request.getContextPath().length());
+		String idStr = path.substring("/admin/paciente/".length());
+		int id = Integer.parseInt(idStr);
 		
-		response.setContentType("application/json");
-		response.setCharacterEncoding("UTF-8");
-		response.getWriter().write(new Gson().toJson(pacientes));
+		Paciente paciente = pacienteDAO.obtenerPaciente(id);
+		if (paciente != null) {
+			request.setAttribute("paciente", paciente);
+			request.getRequestDispatcher("/vistas/admin/paciente/detallesPaciente.jsp").forward(request, response);
+		} else {
+			response.sendError(HttpServletResponse.SC_NOT_FOUND);
+		}
 	}
 
-	private void crearPaciente(HttpServletRequest request, HttpServletResponse response) throws SQLException, ServletException, IOException {
+	private void crearPaciente(HttpServletRequest request, HttpServletResponse response) 
+			throws SQLException, ServletException, IOException {
 		String dni = request.getParameter("dni");
 
 		// Validar DNI duplicado
@@ -153,18 +172,24 @@ public class PacienteServlet extends HttpServlet {
 			paciente.setTelefono(request.getParameter("telefono"));
 			paciente.setEmail(request.getParameter("email"));
 
-			pacienteDAO.agregarPaciente(paciente);
-			out.println("Paciente creado correctamente");
-			response.sendRedirect(request.getContextPath() + "/admin/paciente/pacientes");
-
+			if (pacienteDAO.agregarPaciente(paciente)) {
+				request.getSession().setAttribute("mensaje", "Paciente creado exitosamente");
+				response.sendRedirect(request.getContextPath() + "/admin/paciente/pacientes");
+			} else {
+				request.setAttribute("error", "No se pudo crear el paciente");
+				request.getRequestDispatcher("/vistas/admin/paciente/nuevo.jsp").forward(request, response);
+			}
 		} catch (ParseException e) {
 			request.setAttribute("error", "Error en el formato de fecha. Use el formato YYYY-MM-DD");
 			request.getRequestDispatcher("/vistas/admin/paciente/nuevo.jsp").forward(request, response);
 		}
 	}
 
-	private void actualizarPaciente(HttpServletRequest request, HttpServletResponse response) throws SQLException, ServletException, IOException {
-		int id = Integer.parseInt(request.getParameter("id"));
+	private void actualizarPaciente(HttpServletRequest request, HttpServletResponse response) 
+			throws SQLException, ServletException, IOException {
+		String path = request.getRequestURI().substring(request.getContextPath().length());
+		String idStr = path.substring("/admin/paciente/editar/".length());
+		int id = Integer.parseInt(idStr);
 		String dni = request.getParameter("dni");
 
 		try {
@@ -194,70 +219,32 @@ public class PacienteServlet extends HttpServlet {
 			paciente.setTelefono(request.getParameter("telefono"));
 			paciente.setEmail(request.getParameter("email"));
 
-			pacienteDAO.actualizarPaciente(paciente);
-			out.println("Paciente actualizado correctamente");
-
-			// Redirigir a la lista de pacientes
-			response.sendRedirect(request.getContextPath() + "/admin/paciente/pacientes");
-
+			if (pacienteDAO.actualizarPaciente(paciente)) {
+				request.getSession().setAttribute("mensaje", "Paciente actualizado exitosamente");
+				response.sendRedirect(request.getContextPath() + "/admin/paciente/pacientes");
+			} else {
+				request.setAttribute("error", "No se pudo actualizar el paciente");
+				request.getRequestDispatcher("/vistas/admin/paciente/editar.jsp").forward(request, response);
+			}
 		} catch (ParseException e) {
 			request.setAttribute("error", "Error en el formato de fecha. Use el formato YYYY-MM-DD");
-			request.setAttribute("paciente", pacienteDAO.obtenerPaciente(id));
-			request.getRequestDispatcher("/vistas/admin/paciente/editar.jsp").forward(request, response);
-		} catch (SQLException e) {
-			request.setAttribute("error", "Error al actualizar el paciente: " + e.getMessage());
-			request.setAttribute("paciente", pacienteDAO.obtenerPaciente(id));
 			request.getRequestDispatcher("/vistas/admin/paciente/editar.jsp").forward(request, response);
 		}
 	}
 
-	private void eliminarPaciente(HttpServletRequest request, HttpServletResponse response) throws SQLException, ServletException, IOException {
-		try {
-			// Obtener y validar el ID
-			String idStr = request.getParameter("id");
-			if (idStr == null || idStr.trim().isEmpty()) {
-				request.setAttribute("error", "ID de paciente no proporcionado");
-				response.sendRedirect(request.getContextPath() + "/admin/paciente/pacientes");
-				return;
-			}
-
-			int id = Integer.parseInt(idStr);
-			out.println("Intentando eliminar paciente con ID: " + id);
-
-			// Verificar si el paciente existe antes de eliminar
-			Paciente paciente = pacienteDAO.obtenerPaciente(id);
-			if (paciente == null) {
-				request.setAttribute("error", "El paciente no existe");
-				response.sendRedirect(request.getContextPath() + "/admin/paciente/pacientes");
-				return;
-			}
-
-
-
-			// Intentar eliminar el paciente
-			boolean eliminado = pacienteDAO.eliminarPaciente(id);
-			if (eliminado) {
-				request.setAttribute("mensaje", "Paciente eliminado correctamente");
-				out.println("Paciente eliminado correctamente");
-			} else {
-				request.setAttribute("error", "No se pudo eliminar el paciente");
-				out.println("Error al eliminar el paciente");
-			}
-
-		} catch (NumberFormatException e) {
-			request.setAttribute("error", "ID de paciente inválido");
-			out.println("Error: ID de paciente inválido");
-		} catch (SQLException e) {
-			// Verificar si es un error de clave foránea
-			if (e.getMessage().contains("foreign key constraint fails")) {
-				request.setAttribute("error", "No se puede eliminar el paciente porque tiene citas médicas asociadas. Por favor, elimine primero las citas del paciente.");
-			} else {
-				request.setAttribute("error", "Error al eliminar el paciente: " + e.getMessage());
-			}
-			out.println("Error SQL: " + e.getMessage());
+	private void eliminarPaciente(HttpServletRequest request, HttpServletResponse response) 
+			throws SQLException, ServletException, IOException {
+		String path = request.getRequestURI().substring(request.getContextPath().length());
+		String idStr = path.substring("/admin/paciente/eliminar/".length());
+		int id = Integer.parseInt(idStr);
+		
+		if (pacienteDAO.eliminarPaciente(id)) {
+			response.setContentType("application/json");
+			response.getWriter().write("{\"success\": true, \"message\": \"Paciente eliminado exitosamente\"}");
+		} else {
+			response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+			response.setContentType("application/json");
+			response.getWriter().write("{\"success\": false, \"message\": \"No se pudo eliminar el paciente\"}");
 		}
-
-		// Redirigir de vuelta a la lista de pacientes
-		response.sendRedirect(request.getContextPath() + "/admin/paciente/pacientes");
 	}
 } 

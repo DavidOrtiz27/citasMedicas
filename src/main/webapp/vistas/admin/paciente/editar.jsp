@@ -166,7 +166,7 @@
                 <!-- Formulario -->
                 <div class="card">
                     <div class="card-body">
-                        <form action="${pageContext.request.contextPath}/admin/paciente/pacientes/actualizar" method="POST" class="needs-validation" novalidate>
+                        <form action="${pageContext.request.contextPath}/admin/paciente/editar/${paciente.id}" method="POST" class="needs-validation" novalidate>
                             <input type="hidden" name="id" value="${paciente.id}">
                             
                             <div class="row">
