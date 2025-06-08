@@ -311,4 +311,16 @@ public class DoctorDAO {
             stmt.executeUpdate();
         }
     }
+
+
+
+    //TODO agregar funcionalidad, de momento se agrego el metodo solo para compilar la aplicacion
+    public Doctor buscarPorId(int id){
+        throw new UnsupportedOperationException("Unimplemented method 'buscarPorId' for class DoctorDAO");
+    }
+
+    //TODO agregar funcionalidad, de momento se agrego el metodo solo para compilar la aplicacion
+    public List<Doctor> listarPorEspecialidad(int id) {
+        throw new UnsupportedOperationException("Unimplemented method 'listarPorEspecialidad' for class DoctorDAO");
+    }
 }
