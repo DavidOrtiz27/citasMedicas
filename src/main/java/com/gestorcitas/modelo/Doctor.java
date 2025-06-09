@@ -67,4 +67,4 @@ public class Doctor {
     public void setTelefono(String telefono) {
         this.telefono = telefono;
     }
-}
+} 

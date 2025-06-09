@@ -101,54 +101,7 @@
     <div class="container-fluid">
         <div class="row">
             <!-- Sidebar -->
-            <nav class="col-md-3 col-lg-2 d-md-block sidebar">
-                <div class="position-sticky">
-                    <div class="text-center py-4">
-                        <h4 class="text-white">Sistema de Citas</h4>
-                        <p class="text-light opacity-75">Panel de Administración</p>
-                    </div>
-                    
-                    <ul class="nav flex-column px-3">
-                        <li class="nav-item">
-                            <a class="nav-link" href="${pageContext.request.contextPath}/admin/inicio">
-                                <i class="bi bi-house"></i>
-                                Inicio
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link active" href="${pageContext.request.contextPath}/admin/paciente/pacientes">
-                                <i class="bi bi-people"></i>
-                                Pacientes
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" href="${pageContext.request.contextPath}/admin/doctor/doctores">
-                                <i class="bi bi-person-badge"></i>
-                                Doctores
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" href="${pageContext.request.contextPath}/admin/citas/citas">
-                                <i class="bi bi-calendar-check"></i>
-                                Citas
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" href="${pageContext.request.contextPath}/admin/especialidad/especialidades">
-                                <i class="bi bi-list-check"></i>
-                                Especialidades
-                            </a>
-                        </li>
-                    
-                        <li class="nav-item">
-                            <a class="nav-link" href="${pageContext.request.contextPath}/admin/usuario/usuarios">
-                                <i class="bi bi-people-fill"></i>
-                                Usuarios
-                            </a>
-                        </li>
-                    </ul>
-                </div>
-            </nav>
+            <%@ include file="../../../includes/sitebarAdmin.jsp" %>
 
             <!-- Contenido principal -->
             <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4 py-4">
@@ -161,7 +114,7 @@
                 <!-- Formulario -->
                 <div class="card">
                     <div class="card-body">
-                        <form action="${pageContext.request.contextPath}/admin/paciente/crear" method="POST" class="needs-validation" novalidate>
+                        <form action="${pageContext.request.contextPath}/admin/paciente/pacientes/guardar" method="POST" class="needs-validation" novalidate>
                             <div class="row">
                                 <div class="col-md-6 mb-3">
                                     <label for="nombres" class="form-label required-field">Nombres</label>

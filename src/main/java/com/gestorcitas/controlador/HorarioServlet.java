@@ -1,6 +1,7 @@
 package com.gestorcitas.controlador;
 
 import java.io.IOException;
+import java.sql.SQLException;
 import java.time.LocalTime;
 import java.util.List;
 
@@ -10,130 +11,152 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import com.gestorcitas.dao.DoctorDAO;
 import com.gestorcitas.dao.HorarioDAO;
+import com.gestorcitas.modelo.Doctor;
 import com.gestorcitas.modelo.Horario;
 import com.gestorcitas.util.LocalTimeAdapter;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 
-@WebServlet(urlPatterns = {"/admin/horario/horarios", "/admin/horario/horarios/*"})
+import static java.lang.System.out;
+
+@WebServlet(urlPatterns = {
+        "/admin/horario/horarios",
+        "/admin/horario/horarios/agregar",
+        "/admin/horario/horarios/actualizar",
+        "/admin/horario/horarios/eliminar"
+})
 public class HorarioServlet extends HttpServlet {
     private HorarioDAO horarioDAO;
-    private Gson gson;
+    private DoctorDAO doctorDAO;
 
     @Override
     public void init() throws ServletException {
         horarioDAO = new HorarioDAO();
-        gson = new GsonBuilder()
-                .registerTypeAdapter(LocalTime.class, new LocalTimeAdapter())
-                .create();
+        doctorDAO = new DoctorDAO();
     }
 
-    @Override
-    protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-        String pathInfo = request.getPathInfo();
-        
-        // Si es una petición AJAX o API
-        if (request.getHeader("X-Requested-With") != null || 
-            request.getHeader("Accept") != null && request.getHeader("Accept").contains("application/json")) {
-            handleApiRequest(request, response);
-            return;
-        }
-        
-        // Si es una petición normal de página
-        try {
-            if (pathInfo == null || pathInfo.equals("/")) {
-                // Listar todos los horarios
+    protected void doGet(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
+        String servletPath = request.getServletPath();
+        try{
+            if (servletPath.equals("/admin/horario/horarios")){
                 List<Horario> horarios = horarioDAO.listarTodos();
+                List<Doctor> doctores = doctorDAO.listarDoctores();
+
                 request.setAttribute("horarios", horarios);
+                request.setAttribute("doctores", doctores);
                 request.getRequestDispatcher("/vistas/admin/horario/horarios.jsp").forward(request, response);
             }
         } catch (Exception e) {
-            e.printStackTrace();
-            request.setAttribute("error", "Error al cargar los horarios: " + e.getMessage());
+            request.setAttribute("error", "Error al procesar la solicitud: " + e.getMessage());
             request.getRequestDispatcher("/vistas/admin/horario/horarios.jsp").forward(request, response);
         }
     }
-    
-    private void handleApiRequest(HttpServletRequest request, HttpServletResponse response) throws IOException {
-        String pathInfo = request.getPathInfo();
-        response.setContentType("application/json");
-        response.setCharacterEncoding("UTF-8");
 
-        try {
-            if (pathInfo == null || pathInfo.equals("/")) {
-                // Listar todos los horarios
-                List<Horario> horarios = horarioDAO.listarTodos();
-                response.getWriter().write(gson.toJson(horarios));
-            } else if (pathInfo.matches("/\\d+")) {
-                // Obtener un horario específico
-                int id = Integer.parseInt(pathInfo.substring(1));
-                Horario horario = horarioDAO.obtenerPorId(id);
-                if (horario != null) {
-                    response.getWriter().write(gson.toJson(horario));
-                } else {
-                    response.setStatus(HttpServletResponse.SC_NOT_FOUND);
-                }
-            } else {
-                response.sendError(HttpServletResponse.SC_NOT_FOUND);
-            }
-        } catch (Exception e) {
-            response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
-            response.getWriter().write("{\"error\": \"" + e.getMessage() + "\"}");
-        }
-    }
 
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-        String pathInfo = request.getPathInfo();
-        
+        String servletPath = request.getServletPath();
         try {
-            if (pathInfo == null || pathInfo.equals("/")) {
-                // Crear nuevo horario
-                Horario horario = gson.fromJson(request.getReader(), Horario.class);
-                horario.setActivo(true);
-                if (horarioDAO.guardar(horario)) {
-                    response.setStatus(HttpServletResponse.SC_CREATED);
-                } else {
-                    response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
-                }
-            } else if (pathInfo.matches("/\\d+")) {
-                // Actualizar horario existente
-                int id = Integer.parseInt(pathInfo.substring(1));
-                Horario horario = gson.fromJson(request.getReader(), Horario.class);
-                horario.setId(id);
-                if (horarioDAO.actualizar(horario)) {
-                    response.setStatus(HttpServletResponse.SC_OK);
-                } else {
-                    response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
-                }
-            } else {
-                response.sendError(HttpServletResponse.SC_NOT_FOUND);
+            if (servletPath.equals("/admin/horario/horarios/agregar")) {
+                // Crear horario
+                crearHorario(request, response);
+            } else if (servletPath.equals("/admin/horario/horarios/actualizar")) {
+                // Actualizar horario
+                actualizarHorario(request, response);
+            } else if (servletPath.equals("/admin/horario/horarios/eliminar")) {
+                // Eliminar horario
+                eliminarHorario(request, response);
             }
-        } catch (Exception e) {
-            response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-            response.getWriter().write("{\"error\": \"" + e.getMessage() + "\"}");
+        } catch (SQLException e) {
+            request.setAttribute("error", "Error al guardar el doctor: " + e.getMessage());
+            request.getRequestDispatcher("/vistas/admin/doctor/doctores.jsp").forward(request, response);
         }
     }
-    
-    @Override
-    protected void doDelete(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-        String pathInfo = request.getPathInfo();
-        
-        try {
-            if (pathInfo != null && pathInfo.matches("/\\d+")) {
-                int id = Integer.parseInt(pathInfo.substring(1));
-                if (horarioDAO.eliminar(id)) {
-                    response.setStatus(HttpServletResponse.SC_OK);
-                } else {
-                    response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
-                }
-            } else {
-                response.sendError(HttpServletResponse.SC_NOT_FOUND);
+
+    private void actualizarHorario(HttpServletRequest request, HttpServletResponse response) {
+        try{
+            // Obtener el id del horario a actualizar
+            String idStr = request.getParameter("id");
+            if (idStr == null || idStr.trim().isEmpty()) {
+                request.setAttribute("error", "ID del horario no proporcionado");
+                response.sendRedirect(request.getContextPath() + "/admin/horario/horarios");
+                return;
             }
-        } catch (Exception e) {
-            response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
-            response.getWriter().write("{\"error\": \"" + e.getMessage() + "\"}");
+            int id = Integer.parseInt(idStr);
+            // Obtener los datos del horario a actualizar
+            Horario horario = new Horario();
+            horario.setId(id);
+            horario.setDoctorId(Integer.parseInt(request.getParameter("doctorId")));
+            horario.setNombreDoctor(request.getParameter("nombreDoctor"));
+            horario.setApellidoDoctor(request.getParameter("apellidoDoctor"));
+            horario.setDiaSemana(request.getParameter("diaSemana"));
+            horario.setHoraInicio(LocalTime.parse(request.getParameter("horaInicio")));
+            horario.setHoraFin(LocalTime.parse(request.getParameter("horaFin")));
+            boolean actualizado = horarioDAO.actualizarHorario(horario);
+            if (actualizado) {
+                request.setAttribute("mensaje", "Horario actualizado correctamente");
+            } else {
+                request.setAttribute("error", "No se pudo actualizar el horario");
+            }
+            response.sendRedirect(request.getContextPath() + "/admin/horario/horarios");
+        } catch (IOException | SQLException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    private void eliminarHorario(HttpServletRequest request, HttpServletResponse response)  throws SQLException, ServletException, IOException {
+        try{
+            // Obtener el id del horario a eliminar
+            String idStr = request.getParameter("id");
+            if (idStr == null || idStr.trim().isEmpty()) {
+                request.setAttribute("error", "ID del horario no proporcionado");
+                response.sendRedirect(request.getContextPath() + "/admin/horario/horarios");
+                return;
+            }
+
+            int id = Integer.parseInt(idStr);
+            // verificar si el doctor existe antes de eliminar
+            Horario horario = horarioDAO.obtenerHorario(id);
+            if (horario == null) {
+                request.setAttribute("error", "El horario no existe");
+                response.sendRedirect(request.getContextPath() + "/admin/horario/horarios");
+                return;
+            }
+
+            boolean eliminado = horarioDAO.eliminarHorario(id);
+            if (eliminado) {
+                request.setAttribute("mensaje", "Horario eliminado correctamente");
+            } else {
+                request.setAttribute("error", "No se pudo eliminar el horario");
+            }
+
+
+        } catch (NumberFormatException e) {
+            request.setAttribute("error", "ID de doctor inválido");
+            out.println("Error: ID de doctor inválido");
+        } catch (SQLException e) {
+            request.setAttribute("error", "Error al eliminar el horario: " + e.getMessage());
+        }
+        response.sendRedirect(request.getContextPath() + "/admin/horario/horarios");
+
+    }
+
+    private void crearHorario(HttpServletRequest request, HttpServletResponse response) throws SQLException, ServletException, IOException  {
+        try {
+            Horario horario = new Horario();
+            horario.setDoctorId(Integer.parseInt(request.getParameter("doctorId")));
+            horario.setNombreDoctor(request.getParameter("nombreDoctor"));
+            horario.setApellidoDoctor(request.getParameter("apellidoDoctor"));
+            horario.setDiaSemana(request.getParameter("diaSemana"));
+            horario.setHoraInicio(LocalTime.parse(request.getParameter("horaInicio")));
+            horario.setHoraFin(LocalTime.parse(request.getParameter("horaFin")));
+            horarioDAO.crearDoctor(horario);
+            response.sendRedirect(request.getContextPath() + "/admin/horario/horarios");
+        } catch (Exception e){
+
         }
     }
 }
