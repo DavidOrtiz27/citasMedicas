@@ -10,7 +10,6 @@ import java.util.List;
 
 import com.gestorcitas.modelo.Doctor;
 import com.gestorcitas.modelo.Especialidad;
-import com.gestorcitas.modelo.Paciente;
 import com.gestorcitas.util.DatabaseUtil;
 
 public class DoctorDAO {
@@ -243,5 +242,23 @@ public class DoctorDAO {
             stmt.setInt(7, doctor.getId());
             stmt.executeUpdate();
         }
+    }
+
+
+    public List<Doctor> listarTodos() {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'listarTodos'");
+    }
+
+
+    public Doctor buscarPorId(int id) {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'buscarPorId'");
+    }
+
+
+    public List<Doctor> listarPorEspecialidad(int id) {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'listarPorEspecialidad'");
     }
 }

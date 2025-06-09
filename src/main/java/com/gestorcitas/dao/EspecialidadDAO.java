@@ -107,4 +107,9 @@ public class EspecialidadDAO {
         especialidad.setDescripcion(rs.getString("descripcion"));
         return especialidad;
     }
+
+    public List<Especialidad> listarTodas() {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'listarTodas'");
+    }
 } 
