@@ -186,7 +186,7 @@
                             </a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link" href="${pageContext.request.contextPath}/admin/citas/citas">
+                            <a class="nav-link" href="${pageContext.request.contextPath}/admin/citas">
                                 <i class="bi bi-calendar-check"></i>
                                 Citas
                             </a>

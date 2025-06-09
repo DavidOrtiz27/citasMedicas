@@ -130,7 +130,7 @@
                             </a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link active" href="${pageContext.request.contextPath}/admin/citas/citas">
+                            <a class="nav-link active" href="${pageContext.request.contextPath}/admin/citas">
                                 <i class="bi bi-calendar-check"></i>
                                 Citas
                             </a>
@@ -241,7 +241,7 @@
                             </div>
                             
                             <div class="d-flex justify-content-end gap-2">
-                                <a href="${pageContext.request.contextPath}/admin/citas/citas" class="btn btn-secondary">
+                                <a href="${pageContext.request.contextPath}/admin/citas" class="btn btn-secondary">
                                     <i class="bi bi-x-lg"></i> Cancelar
                                 </a>
                                 <button type="submit" class="btn btn-primary">
@@ -391,7 +391,7 @@
                         console.log(pair[0] + ': ' + pair[1]);
                     }
                     
-                    const response = await fetch('/citasMedicas_war_exploded/admin/citas/citas', {
+                    const response = await fetch('/citasMedicas_war_exploded/admin/citas', {
                         method: 'POST',
                         body: formData,
                         headers: {
@@ -427,7 +427,7 @@
                                 if (result.redirect) {
                                     window.location.href = result.redirect;
                                 } else {
-                                    window.location.href = '/citasMedicas_war_exploded/admin/citas/citas';
+                                    window.location.href = '/citasMedicas_war_exploded/admin/citas';
                                 }
                             }, 1500);
                         } else {

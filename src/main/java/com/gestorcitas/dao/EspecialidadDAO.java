@@ -77,38 +77,44 @@ public class EspecialidadDAO {
         }
     }
     
-    public void eliminar(int id) throws SQLException {
+    public boolean eliminar(int id) throws SQLException {
+        String sqlCitas = "DELETE FROM citas WHERE doctor_id IN (SELECT id FROM doctores WHERE especialidad_id = ?)";
+        String sqlDoctores = "DELETE FROM doctores WHERE especialidad_id = ?";
+        String sqlEspecialidad = "DELETE FROM especialidades WHERE id = ?";
+
         try (Connection conn = DatabaseUtil.getConnection()) {
-            conn.setAutoCommit(false); // Iniciar transacción
-            
+            conn.setAutoCommit(false);
             try {
-                // Primero eliminar las citas asociadas a médicos de esta especialidad
-                String sqlCitas = "DELETE FROM citas WHERE medico_id IN (SELECT id FROM medicos WHERE especialidad_id = ?)";
-                try (PreparedStatement stmtCitas = conn.prepareStatement(sqlCitas)) {
-                    stmtCitas.setInt(1, id);
-                    stmtCitas.executeUpdate();
-                }
-                
-                // Luego eliminar los médicos asociados
-                String sqlMedicos = "DELETE FROM medicos WHERE especialidad_id = ?";
-                try (PreparedStatement stmtMedicos = conn.prepareStatement(sqlMedicos)) {
-                    stmtMedicos.setInt(1, id);
-                    stmtMedicos.executeUpdate();
-                }
-                
-                // Finalmente eliminar la especialidad
-                String sql = "DELETE FROM especialidades WHERE id = ?";
-                try (PreparedStatement stmt = conn.prepareStatement(sql)) {
+                // Primero eliminar las citas asociadas
+                try (PreparedStatement stmt = conn.prepareStatement(sqlCitas)) {
                     stmt.setInt(1, id);
                     stmt.executeUpdate();
                 }
-                
-                conn.commit(); // Confirmar transacción
+
+                // Luego eliminar los doctores asociados
+                try (PreparedStatement stmt = conn.prepareStatement(sqlDoctores)) {
+                    stmt.setInt(1, id);
+                    stmt.executeUpdate();
+                }
+
+                // Finalmente eliminar la especialidad
+                try (PreparedStatement stmt = conn.prepareStatement(sqlEspecialidad)) {
+                    stmt.setInt(1, id);
+                    int filasAfectadas = stmt.executeUpdate();
+                    
+                    if (filasAfectadas > 0) {
+                        conn.commit();
+                        return true;
+                    } else {
+                        conn.rollback();
+                        return false;
+                    }
+                }
             } catch (SQLException e) {
-                conn.rollback(); // Revertir transacción en caso de error
+                conn.rollback();
                 throw e;
             } finally {
-                conn.setAutoCommit(true); // Restaurar autocommit
+                conn.setAutoCommit(true);
             }
         }
     }

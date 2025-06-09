@@ -164,7 +164,7 @@
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link active" href="${pageContext.request.contextPath}/admin/citas/citas">
+                    <a class="nav-link active" href="${pageContext.request.contextPath}/admin/citas">
                         <i class="bi bi-calendar-check"></i>
                         Citas
                     </a>
@@ -280,7 +280,7 @@
                     <h5 class="modal-title">Cancelar Cita</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
-                <form action="${pageContext.request.contextPath}/admin/citas/citas" method="post">
+                <form action="${pageContext.request.contextPath}/admin/citas" method="post">
                     <div class="modal-body">
                         <input type="hidden" name="accion" value="cancelar">
                         <input type="hidden" name="id" id="citaIdCancelar">
@@ -339,7 +339,7 @@
             }).then((result) => {
                 if (result.isConfirmed) {
                     $.ajax({
-                        url: '${pageContext.request.contextPath}/admin/citas/citas',
+                        url: '${pageContext.request.contextPath}/admin/citas',
                         type: 'POST',
                         data: {
                             accion: 'eliminar',

@@ -11,6 +11,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
@@ -67,6 +68,8 @@ public class PublicoController extends HttpServlet {
                 request.getRequestDispatcher("/vistas/publico/solicitar.jsp").forward(request, response);
             } else if (path.equals("/doctores")) {
                 listarDoctores(request, response);
+            } else if (path.equals("/doctor")) {
+                buscarDoctor(request, response);
             } else {
                 response.sendError(HttpServletResponse.SC_NOT_FOUND);
             }
@@ -193,7 +196,7 @@ public class PublicoController extends HttpServlet {
         // Crear cita
         Cita cita = new Cita();
         cita.setPaciente(paciente);
-        cita.setDoctor(doctorDAO.buscarPorId(doctorId));
+        cita.setDoctor(doctorDAO.obtenerDoctor(doctorId));
         try {
             cita.setFecha(DATE_FORMAT.parse(fecha + " " + hora + ":00"));
         } catch (ParseException e) {
@@ -226,14 +229,45 @@ public class PublicoController extends HttpServlet {
             int especialidadId = Integer.parseInt(especialidadIdStr);
             System.out.println("Buscando doctores para especialidad ID: " + especialidadId);
             
-            List<Doctor> doctores = doctorDAO.listarPorEspecialidad(especialidadId);
+            List<Doctor> doctores = doctorDAO.listarDoctores();
             System.out.println("Doctores encontrados: " + doctores.size());
             
-            enviarJson(response, doctores);
+            // Filtrar doctores por especialidad
+            List<Doctor> doctoresFiltrados = doctores.stream()
+                .filter(d -> d.getEspecialidad() != null && d.getEspecialidad().getId() == especialidadId)
+                .collect(Collectors.toList());
+            
+            enviarJson(response, doctoresFiltrados);
         } catch (NumberFormatException e) {
             System.err.println("Error al parsear especialidadId: " + e.getMessage());
             e.printStackTrace();
             enviarJson(response, new ArrayList<>());
+        }
+    }
+    
+    private void buscarDoctor(HttpServletRequest request, HttpServletResponse response) 
+            throws SQLException, IOException {
+        response.setContentType("application/json");
+        response.setCharacterEncoding("UTF-8");
+        
+        try {
+            String idStr = request.getParameter("id");
+            if (idStr == null || idStr.trim().isEmpty()) {
+                response.getWriter().write("null");
+                return;
+            }
+
+            int id = Integer.parseInt(idStr);
+            Doctor doctor = doctorDAO.obtenerDoctor(id);
+            
+            String jsonResponse = gson.toJson(doctor);
+            response.getWriter().write(jsonResponse);
+        } catch (NumberFormatException e) {
+            e.printStackTrace();
+            response.getWriter().write("null");
+        } catch (Exception e) {
+            e.printStackTrace();
+            response.getWriter().write("null");
         }
     }
     

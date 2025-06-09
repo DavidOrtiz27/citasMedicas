@@ -27,18 +27,11 @@ public class CitaDAO {
                     "JOIN especialidades e ON d.especialidad_id = e.id " +
                     "ORDER BY c.fecha DESC, c.hora DESC";
 
-        Connection conn = null;
-        try {
-            conn = DatabaseUtil.getConnection();
-            try (Statement stmt = conn.createStatement();
-                 ResultSet rs = stmt.executeQuery(sql)) {
-                while (rs.next()) {
-                    citas.add(mapearCita(rs));
-                }
-            }
-        } finally {
-            if (conn != null) {
-                DatabaseUtil.releaseConnection(conn);
+        try (Connection conn = DatabaseUtil.getConnection();
+             Statement stmt = conn.createStatement();
+             ResultSet rs = stmt.executeQuery(sql)) {
+            while (rs.next()) {
+                citas.add(mapearCita(rs));
             }
         }
         return citas;
@@ -48,23 +41,16 @@ public class CitaDAO {
         String sql = "INSERT INTO citas (fecha, hora, paciente_id, doctor_id, estado, fecha_creacion) " +
                     "VALUES (?, ?, ?, ?, ?, ?)";
 
-        Connection conn = null;
-        try {
-            conn = DatabaseUtil.getConnection();
-            try (PreparedStatement stmt = conn.prepareStatement(sql)) {
-                stmt.setDate(1, new java.sql.Date(cita.getFecha().getTime()));
-                stmt.setString(2, cita.getHora());
-                stmt.setInt(3, cita.getPaciente().getId());
-                stmt.setInt(4, cita.getDoctor().getId());
-                stmt.setString(5, cita.getEstado());
-                stmt.setTimestamp(6, new java.sql.Timestamp(cita.getFechaCreacion().getTime()));
+        try (Connection conn = DatabaseUtil.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setDate(1, new java.sql.Date(cita.getFecha().getTime()));
+            stmt.setString(2, cita.getHora());
+            stmt.setInt(3, cita.getPaciente().getId());
+            stmt.setInt(4, cita.getDoctor().getId());
+            stmt.setString(5, cita.getEstado());
+            stmt.setTimestamp(6, new java.sql.Timestamp(cita.getFechaCreacion().getTime()));
 
-                return stmt.executeUpdate() > 0;
-            }
-        } finally {
-            if (conn != null) {
-                DatabaseUtil.releaseConnection(conn);
-            }
+            return stmt.executeUpdate() > 0;
         }
     }
 
@@ -72,41 +58,27 @@ public class CitaDAO {
         String sql = "UPDATE citas SET fecha = ?, hora = ?, paciente_id = ?, " +
                     "doctor_id = ?, estado = ?, motivo_cancelacion = ? WHERE id = ?";
 
-        Connection conn = null;
-        try {
-            conn = DatabaseUtil.getConnection();
-            try (PreparedStatement stmt = conn.prepareStatement(sql)) {
-                stmt.setDate(1, new java.sql.Date(cita.getFecha().getTime()));
-                stmt.setString(2, cita.getHora());
-                stmt.setInt(3, cita.getPaciente().getId());
-                stmt.setInt(4, cita.getDoctor().getId());
-                stmt.setString(5, cita.getEstado());
-                stmt.setString(6, cita.getMotivoCancelacion());
-                stmt.setInt(7, cita.getId());
+        try (Connection conn = DatabaseUtil.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setDate(1, new java.sql.Date(cita.getFecha().getTime()));
+            stmt.setString(2, cita.getHora());
+            stmt.setInt(3, cita.getPaciente().getId());
+            stmt.setInt(4, cita.getDoctor().getId());
+            stmt.setString(5, cita.getEstado());
+            stmt.setString(6, cita.getMotivoCancelacion());
+            stmt.setInt(7, cita.getId());
 
-                return stmt.executeUpdate() > 0;
-            }
-        } finally {
-            if (conn != null) {
-                DatabaseUtil.releaseConnection(conn);
-            }
+            return stmt.executeUpdate() > 0;
         }
     }
 
     public boolean eliminar(int id) throws SQLException {
         String sql = "DELETE FROM citas WHERE id = ?";
 
-        Connection conn = null;
-        try {
-            conn = DatabaseUtil.getConnection();
-            try (PreparedStatement stmt = conn.prepareStatement(sql)) {
-                stmt.setInt(1, id);
-                return stmt.executeUpdate() > 0;
-            }
-        } finally {
-            if (conn != null) {
-                DatabaseUtil.releaseConnection(conn);
-            }
+        try (Connection conn = DatabaseUtil.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setInt(1, id);
+            return stmt.executeUpdate() > 0;
         }
     }
 
@@ -120,20 +92,13 @@ public class CitaDAO {
                     "JOIN especialidades e ON d.especialidad_id = e.id " +
                     "WHERE c.id = ?";
 
-        Connection conn = null;
-        try {
-            conn = DatabaseUtil.getConnection();
-            try (PreparedStatement stmt = conn.prepareStatement(sql)) {
-                stmt.setInt(1, id);
-                try (ResultSet rs = stmt.executeQuery()) {
-                    if (rs.next()) {
-                        return mapearCita(rs);
-                    }
+        try (Connection conn = DatabaseUtil.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setInt(1, id);
+            try (ResultSet rs = stmt.executeQuery()) {
+                if (rs.next()) {
+                    return mapearCita(rs);
                 }
-            }
-        } finally {
-            if (conn != null) {
-                DatabaseUtil.releaseConnection(conn);
             }
         }
         return null;
@@ -142,23 +107,16 @@ public class CitaDAO {
     public boolean existeCitaEnHorario(Date fecha, String hora, int doctorId) throws SQLException {
         String sql = "SELECT COUNT(*) FROM citas WHERE fecha = ? AND hora = ? AND doctor_id = ? AND estado != 'CANCELADA'";
 
-        Connection conn = null;
-        try {
-            conn = DatabaseUtil.getConnection();
-            try (PreparedStatement stmt = conn.prepareStatement(sql)) {
-                stmt.setDate(1, new java.sql.Date(fecha.getTime()));
-                stmt.setString(2, hora);
-                stmt.setInt(3, doctorId);
+        try (Connection conn = DatabaseUtil.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setDate(1, new java.sql.Date(fecha.getTime()));
+            stmt.setString(2, hora);
+            stmt.setInt(3, doctorId);
 
-                try (ResultSet rs = stmt.executeQuery()) {
-                    if (rs.next()) {
-                        return rs.getInt(1) > 0;
-                    }
+            try (ResultSet rs = stmt.executeQuery()) {
+                if (rs.next()) {
+                    return rs.getInt(1) > 0;
                 }
-            }
-        } finally {
-            if (conn != null) {
-                DatabaseUtil.releaseConnection(conn);
             }
         }
         return false;
@@ -167,20 +125,13 @@ public class CitaDAO {
     public boolean actualizarEstado(int id, String estado, String motivoCancelacion) throws SQLException {
         String sql = "UPDATE citas SET estado = ?, motivo_cancelacion = ? WHERE id = ?";
 
-        Connection conn = null;
-        try {
-            conn = DatabaseUtil.getConnection();
-            try (PreparedStatement stmt = conn.prepareStatement(sql)) {
-                stmt.setString(1, estado);
-                stmt.setString(2, motivoCancelacion);
-                stmt.setInt(3, id);
+        try (Connection conn = DatabaseUtil.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setString(1, estado);
+            stmt.setString(2, motivoCancelacion);
+            stmt.setInt(3, id);
 
-                return stmt.executeUpdate() > 0;
-            }
-        } finally {
-            if (conn != null) {
-                DatabaseUtil.releaseConnection(conn);
-            }
+            return stmt.executeUpdate() > 0;
         }
     }
 
@@ -196,20 +147,13 @@ public class CitaDAO {
                     "WHERE c.paciente_id = ? " +
                     "ORDER BY c.fecha DESC, c.hora";
                     
-        Connection conn = null;
-        try {
-            conn = DatabaseUtil.getConnection();
-            try (PreparedStatement stmt = conn.prepareStatement(sql)) {
-                stmt.setInt(1, pacienteId);
-                try (ResultSet rs = stmt.executeQuery()) {
-                    while (rs.next()) {
-                        citas.add(mapearCita(rs));
-                    }
+        try (Connection conn = DatabaseUtil.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setInt(1, pacienteId);
+            try (ResultSet rs = stmt.executeQuery()) {
+                while (rs.next()) {
+                    citas.add(mapearCita(rs));
                 }
-            }
-        } finally {
-            if (conn != null) {
-                DatabaseUtil.releaseConnection(conn);
             }
         }
         return citas;
@@ -227,20 +171,13 @@ public class CitaDAO {
                     "WHERE c.doctor_id = ? " +
                     "ORDER BY c.fecha DESC, c.hora";
                     
-        Connection conn = null;
-        try {
-            conn = DatabaseUtil.getConnection();
-            try (PreparedStatement stmt = conn.prepareStatement(sql)) {
-                stmt.setInt(1, doctorId);
-                try (ResultSet rs = stmt.executeQuery()) {
-                    while (rs.next()) {
-                        citas.add(mapearCita(rs));
-                    }
+        try (Connection conn = DatabaseUtil.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setInt(1, doctorId);
+            try (ResultSet rs = stmt.executeQuery()) {
+                while (rs.next()) {
+                    citas.add(mapearCita(rs));
                 }
-            }
-        } finally {
-            if (conn != null) {
-                DatabaseUtil.releaseConnection(conn);
             }
         }
         return citas;
@@ -259,19 +196,12 @@ public class CitaDAO {
                     "ORDER BY c.fecha ASC, c.hora ASC " +
                     "LIMIT 10";
         
-        Connection conn = null;
-        try {
-            conn = DatabaseUtil.getConnection();
-            try (PreparedStatement stmt = conn.prepareStatement(sql);
-                 ResultSet rs = stmt.executeQuery()) {
-                
-                while (rs.next()) {
-                    citas.add(mapearCita(rs));
-                }
-            }
-        } finally {
-            if (conn != null) {
-                DatabaseUtil.releaseConnection(conn);
+        try (Connection conn = DatabaseUtil.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql);
+             ResultSet rs = stmt.executeQuery()) {
+            
+            while (rs.next()) {
+                citas.add(mapearCita(rs));
             }
         }
         return citas;
@@ -280,19 +210,12 @@ public class CitaDAO {
     public int contarCitasHoy() throws SQLException {
         String sql = "SELECT COUNT(*) FROM citas WHERE fecha = CURDATE()";
         
-        Connection conn = null;
-        try {
-            conn = DatabaseUtil.getConnection();
-            try (PreparedStatement stmt = conn.prepareStatement(sql);
-                 ResultSet rs = stmt.executeQuery()) {
-                
-                if (rs.next()) {
-                    return rs.getInt(1);
-                }
-            }
-        } finally {
-            if (conn != null) {
-                DatabaseUtil.releaseConnection(conn);
+        try (Connection conn = DatabaseUtil.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql);
+             ResultSet rs = stmt.executeQuery()) {
+            
+            if (rs.next()) {
+                return rs.getInt(1);
             }
         }
         return 0;
@@ -311,21 +234,14 @@ public class CitaDAO {
                     
         List<Cita> citas = new ArrayList<>();
         
-        Connection conn = null;
-        try {
-            conn = DatabaseUtil.getConnection();
-            try (PreparedStatement stmt = conn.prepareStatement(sql)) {
-                stmt.setDate(1, new java.sql.Date(fechaInicio.getTime()));
-                stmt.setDate(2, new java.sql.Date(fechaFin.getTime()));
-                try (ResultSet rs = stmt.executeQuery()) {
-                    while (rs.next()) {
-                        citas.add(mapearCita(rs));
-                    }
+        try (Connection conn = DatabaseUtil.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setDate(1, new java.sql.Date(fechaInicio.getTime()));
+            stmt.setDate(2, new java.sql.Date(fechaFin.getTime()));
+            try (ResultSet rs = stmt.executeQuery()) {
+                while (rs.next()) {
+                    citas.add(mapearCita(rs));
                 }
-            }
-        } finally {
-            if (conn != null) {
-                DatabaseUtil.releaseConnection(conn);
             }
         }
         return citas;

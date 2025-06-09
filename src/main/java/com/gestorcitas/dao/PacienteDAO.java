@@ -249,18 +249,11 @@ public class PacienteDAO {
     
     public int contarTotal() throws SQLException {
         String sql = "SELECT COUNT(*) FROM pacientes";
-        Connection conn = null;
-        try {
-            conn = DatabaseUtil.getConnection();
-            try (PreparedStatement stmt = conn.prepareStatement(sql);
-                 ResultSet rs = stmt.executeQuery()) {
-                if (rs.next()) {
-                    return rs.getInt(1);
-                }
-            }
-        } finally {
-            if (conn != null) {
-                DatabaseUtil.releaseConnection(conn);
+        try (Connection conn = DatabaseUtil.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql);
+             ResultSet rs = stmt.executeQuery()) {
+            if (rs.next()) {
+                return rs.getInt(1);
             }
         }
         return 0;

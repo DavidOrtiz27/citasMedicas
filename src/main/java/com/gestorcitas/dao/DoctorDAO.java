@@ -13,20 +13,11 @@ import com.gestorcitas.modelo.Especialidad;
 import com.gestorcitas.util.DatabaseUtil;
 
 public class DoctorDAO {
-    private Connection conexion;
-
-    public DoctorDAO() {
-        try {
-            this.conexion = DatabaseUtil.getConnection();
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-    }
-
+    
     public List<Doctor> listarTodos() throws SQLException {
         List<Doctor> doctores = new ArrayList<>();
         String sql = "SELECT d.*, e.id as especialidad_id, e.nombre as especialidad_nombre, e.descripcion as especialidad_descripcion " +
-                    "FROM medicos d " +
+                    "FROM doctores d " +
                     "LEFT JOIN especialidades e ON d.especialidad_id = e.id " +
                     "ORDER BY d.apellidos, d.nombres";
         
