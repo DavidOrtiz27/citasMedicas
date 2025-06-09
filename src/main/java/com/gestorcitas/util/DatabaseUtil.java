@@ -8,7 +8,7 @@ import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 public class DatabaseUtil {
-    private static final String DB_URL = "jdbc:mysql://localhost:3307/gestor_citas";
+    private static final String DB_URL = "jdbc:mysql://localhost:3306/gestor_citas";
     private static final String DB_USER = "root";
     private static final String DB_PASSWORD = "";
     private static final int MAX_CONNECTIONS = 10;
