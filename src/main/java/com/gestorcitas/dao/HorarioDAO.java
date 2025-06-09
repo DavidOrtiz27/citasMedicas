@@ -9,6 +9,7 @@ import java.sql.Time;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.gestorcitas.modelo.Doctor;
 import com.gestorcitas.modelo.Horario;
 import com.gestorcitas.util.DatabaseUtil;
 
@@ -17,8 +18,8 @@ public class HorarioDAO {
     public List<Horario> listarTodos() throws SQLException {
         List<Horario> horarios = new ArrayList<>();
         String sql = "SELECT h.*, d.nombres, d.apellidos FROM horarios h " +
-                    "INNER JOIN doctores d ON h.doctor_id = d.id " +
-                    "WHERE h.activo = true";
+                "INNER JOIN doctores d ON h.doctor_id = d.id " +
+                "WHERE h.activo = true";
 
         try (Connection conn = DatabaseUtil.getConnection();
              Statement stmt = conn.createStatement();
@@ -28,10 +29,14 @@ public class HorarioDAO {
                 Horario horario = new Horario();
                 horario.setId(rs.getInt("id"));
                 horario.setDoctorId(rs.getInt("doctor_id"));
+                horario.setNombreDoctor(rs.getString("nombres"));
+                horario.setApellidoDoctor(rs.getString("apellidos"));
                 horario.setDiaSemana(rs.getString("dia_semana"));
                 horario.setHoraInicio(rs.getTime("hora_inicio").toLocalTime());
                 horario.setHoraFin(rs.getTime("hora_fin").toLocalTime());
                 horario.setActivo(rs.getBoolean("activo"));
+
+
                 horarios.add(horario);
             }
         }

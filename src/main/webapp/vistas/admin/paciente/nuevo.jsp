@@ -1,9 +1,13 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
+<%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
+
+<fmt:setLocale value="${param.lang != null ? param.lang : 'es'}" />
+<fmt:setBundle basename="messages" />
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <title>Nuevo Paciente - Sistema de Citas Médicas</title>
+    <title><fmt:message key="new.title"/></title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.7.2/font/bootstrap-icons.css" rel="stylesheet">
     <style>
@@ -101,117 +105,70 @@
     <div class="container-fluid">
         <div class="row">
             <!-- Sidebar -->
-            <nav class="col-md-3 col-lg-2 d-md-block sidebar">
-                <div class="position-sticky">
-                    <div class="text-center py-4">
-                        <h4 class="text-white">Sistema de Citas</h4>
-                        <p class="text-light opacity-75">Panel de Administración</p>
-                    </div>
-                    
-                    <ul class="nav flex-column px-3">
-                        <li class="nav-item">
-                            <a class="nav-link" href="${pageContext.request.contextPath}/admin/inicio">
-                                <i class="bi bi-house"></i>
-                                Inicio
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link active" href="${pageContext.request.contextPath}/admin/paciente/pacientes">
-                                <i class="bi bi-people"></i>
-                                Pacientes
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" href="${pageContext.request.contextPath}/admin/doctor/doctores">
-                                <i class="bi bi-person-badge"></i>
-                                Doctores
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" href="${pageContext.request.contextPath}/admin/citas/citas">
-                                <i class="bi bi-calendar-check"></i>
-                                Citas
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" href="${pageContext.request.contextPath}/admin/especialidad/especialidades">
-                                <i class="bi bi-list-check"></i>
-                                Especialidades
-                            </a>
-                        </li>
-                    
-                        <li class="nav-item">
-                            <a class="nav-link" href="${pageContext.request.contextPath}/admin/usuario/usuarios">
-                                <i class="bi bi-people-fill"></i>
-                                Usuarios
-                            </a>
-                        </li>
-                    </ul>
-                </div>
-            </nav>
+            <%@ include file="../../../includes/sitebarAdmin.jsp" %>
 
             <!-- Contenido principal -->
             <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4 py-4">
                 <!-- Encabezado de página -->
                 <div class="page-header">
-                    <h1>Nuevo Paciente</h1>
-                    <p>Complete el formulario para registrar un nuevo paciente</p>
+                    <h1><fmt:message key="new.header"/></h1>
+                    <p><fmt:message key="new.subtext"/></p>
                 </div>
 
                 <!-- Formulario -->
                 <div class="card">
                     <div class="card-body">
-                        <form action="${pageContext.request.contextPath}/admin/paciente/crear" method="POST" class="needs-validation" novalidate>
+                        <form action="${pageContext.request.contextPath}/admin/paciente/pacientes/guardar" method="POST" class="needs-validation" novalidate>
                             <div class="row">
                                 <div class="col-md-6 mb-3">
-                                    <label for="nombres" class="form-label required-field">Nombres</label>
+                                    <label for="nombres" class="form-label required-field"><fmt:message key="form.fields.names"/></label>
                                     <input type="text" class="form-control" id="nombres" name="nombres" required>
                                     <div class="invalid-feedback">
-                                        Por favor ingrese los nombres.
+                                        <fmt:message key="form.fields.warnings.names"/>
                                     </div>
                                 </div>
                                 
                                 <div class="col-md-6 mb-3">
-                                    <label for="apellidos" class="form-label required-field">Apellidos</label>
+                                    <label for="apellidos" class="form-label required-field"><fmt:message key="form.fields.lastname"/></label>
                                     <input type="text" class="form-control" id="apellidos" name="apellidos" required>
                                     <div class="invalid-feedback">
-                                        Por favor ingrese los apellidos.
+                                         <fmt:message key="form.fields.warnings.lastname"/>
                                     </div>
                                 </div>
                             </div>
 
                             <div class="row">
                                 <div class="col-md-6 mb-3">
-                                    <label for="dni" class="form-label required-field">CC</label>
+                                    <label for="dni" class="form-label required-field"><fmt:message key="form.fields.id"/></label>
                                     <input type="text" class="form-control" id="dni" name="dni" required>
                                     <div class="invalid-feedback">
-                                        Por favor ingrese el CC.
+                                        <fmt:message key="form.fields.warnings.id"/>
                                     </div>
                                 </div>
                                 
                                 <div class="col-md-6 mb-3">
-                                    <label for="telefono" class="form-label required-field">Teléfono</label>
+                                    <label for="telefono" class="form-label required-field"><fmt:message key="form.fields.phone"/></label>
                                     <input type="tel" class="form-control" id="telefono" name="telefono" required>
                                     <div class="invalid-feedback">
-                                        Por favor ingrese el teléfono.
+                                        <fmt:message key="form.fields.warnings.phone"/>
                                     </div>
                                 </div>
                             </div>
 
                             <div class="mb-3">
-                                <label for="email" class="form-label required-field">Email</label>
+                                <label for="email" class="form-label required-field"><fmt:message key="form.fields.email"/></label>
                                 <input type="email" class="form-control" id="email" name="email" required>
                                 <div class="invalid-feedback">
-                                    Por favor ingrese un email válido.
+                                    <fmt:message key="form.fields.warnings.email"/>
                                 </div>
                             </div>
 
                             <div class="d-flex justify-content-end gap-2">
                                 <a href="${pageContext.request.contextPath}/admin/paciente/pacientes" class="btn btn-secondary">
-                                    Cancelar
+                                    <fmt:message key="form.fields.cancel"/>
                                 </a>
                                 <button type="submit" class="btn btn-primary">
-                                    Guardar
+                                    <fmt:message key="form.edit.fields.submit"/>
                                 </button>
                             </div>
                         </form>

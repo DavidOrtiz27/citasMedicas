@@ -30,10 +30,10 @@ public class EspecialidadDAO {
     
     public Especialidad buscarPorId(int id) throws SQLException {
         String sql = "SELECT * FROM especialidades WHERE id = ?";
-        
+
         try (Connection conn = DatabaseUtil.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
-            
+
             stmt.setInt(1, id);
             try (ResultSet rs = stmt.executeQuery()) {
                 if (rs.next()) {
@@ -43,18 +43,18 @@ public class EspecialidadDAO {
         }
         return null;
     }
-    
+
     public void crear(Especialidad especialidad) throws SQLException {
         String sql = "INSERT INTO especialidades (nombre, descripcion) VALUES (?, ?)";
-        
+
         try (Connection conn = DatabaseUtil.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
-            
+
             stmt.setString(1, especialidad.getNombre());
             stmt.setString(2, especialidad.getDescripcion());
-            
+
             stmt.executeUpdate();
-            
+
             try (ResultSet rs = stmt.getGeneratedKeys()) {
                 if (rs.next()) {
                     especialidad.setId(rs.getInt(1));
@@ -62,17 +62,17 @@ public class EspecialidadDAO {
             }
         }
     }
-    
+
     public void actualizar(Especialidad especialidad) throws SQLException {
         String sql = "UPDATE especialidades SET nombre = ?, descripcion = ? WHERE id = ?";
-        
+
         try (Connection conn = DatabaseUtil.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
-            
+
             stmt.setString(1, especialidad.getNombre());
             stmt.setString(2, especialidad.getDescripcion());
             stmt.setInt(3, especialidad.getId());
-            
+
             stmt.executeUpdate();
         }
     }
@@ -118,7 +118,7 @@ public class EspecialidadDAO {
             }
         }
     }
-    
+
     public int contarTotal() throws SQLException {
         String sql = "SELECT COUNT(*) FROM especialidades";
         try (Connection conn = DatabaseUtil.getConnection();

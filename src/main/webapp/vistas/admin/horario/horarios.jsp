@@ -1,9 +1,13 @@
-<%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
+<%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8" %>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
+<%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
+
+<fmt:setLocale value="${param.lang != null ? param.lang : 'es'}" />
+<fmt:setBundle basename="messages" />
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <title>Gestión de Horarios - Sistema de Citas Médicas</title>
+    <title><fmt:message key="schedules.title"/></title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.7.2/font/bootstrap-icons.css" rel="stylesheet">
     <style>
@@ -24,7 +28,7 @@
         .sidebar {
             background: var(--primary-color);
             min-height: 100vh;
-            box-shadow: 2px 0 5px rgba(0,0,0,0.1);
+            box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
             transition: all 0.3s;
         }
 
@@ -54,7 +58,7 @@
         .card {
             border: none;
             border-radius: 1rem;
-            box-shadow: 0 0.5rem 1rem rgba(0,0,0,0.1);
+            box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.1);
             transition: transform 0.3s;
         }
 
@@ -116,7 +120,7 @@
             border-radius: 0.5rem;
             padding: 1rem;
             margin-bottom: 1.5rem;
-            box-shadow: 0 0.125rem 0.25rem rgba(0,0,0,0.075);
+            box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
         }
 
         .search-box .form-control {
@@ -182,303 +186,378 @@
     </style>
 </head>
 <body>
-    <div class="container-fluid">
-        <div class="row">
-            <!-- Sidebar -->
-            <nav class="col-md-3 col-lg-2 d-md-block sidebar">
-                <div class="position-sticky">
-                    <div class="text-center py-4">
-                        <h4 class="text-white">Sistema de Citas</h4>
-                        <p class="text-light opacity-75">Panel de Administración</p>
+<div class="container-fluid">
+    <div class="row">
+        <!-- Sidebar -->
+        <%@ include file="../../../includes/sitebarAdmin.jsp" %>
+
+        <!-- Contenido principal -->
+        <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4 py-4">
+            <!-- Encabezado de página -->
+            <div class="page-header">
+                <h1>Gestión de Horarios</h1>
+                <p>Administra los horarios de atención de los médicos</p>
+            </div>
+
+            <!-- Barra de búsqueda -->
+            <div class="search-box">
+                <form class="row g-3" method="get">
+                    <div class="col-md-8">
+                        <div class="input-group">
+                            <input type="text" oninput="buscarfront()" class="form-control" id="searchInput"
+                                   name="buscar"
+                                   placeholder="Buscar">
+                            <button class="btn btn-primary" type="button" id="searchButton" disabled>
+                                <i class="bi bi-search"></i> Buscar
+                            </button>
+                        </div>
                     </div>
-                    
-                    <ul class="nav flex-column px-3">
-                        <li class="nav-item">
-                            <a class="nav-link" href="${pageContext.request.contextPath}/admin/inicio">
-                                <i class="bi bi-house"></i>
-                                Inicio
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" href="${pageContext.request.contextPath}/admin/paciente/pacientes">
-                                <i class="bi bi-people"></i>
-                                Pacientes
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" href="${pageContext.request.contextPath}/admin/doctor/doctores">
-                                <i class="bi bi-person-badge"></i>
-                                Doctores
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" href="${pageContext.request.contextPath}/admin/citas/citas">
-                                <i class="bi bi-calendar-check"></i>
-                                Citas
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" href="${pageContext.request.contextPath}/admin/especialidad/especialidades">
-                                <i class="bi bi-list-check"></i>
-                                Especialidades
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link active" href="${pageContext.request.contextPath}/admin/horario/horarios">
-                                <i class="bi bi-clock"></i>
-                                Horarios
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" href="${pageContext.request.contextPath}/admin/usuario/usuarios">
-                                <i class="bi bi-people-fill"></i>
-                                Usuarios
-                            </a>
-                        </li>
-                    </ul>
+                    <div class="col-md-4 text-end">
+                        <button type="button"
+                                class="btn btn-success"
+                                data-bs-toggle="modal"
+                                data-bs-target="#horarioModal"
+                        >
+                            <i class="bi bi-plus-lg"></i> Nuevo Horario
+                        </button>
+                    </div>
+                </form>
+            </div>
+
+            <nav class="navbar navbar-expand-lg navbar-light bg-light rounded mb-3">
+                <div class="container-fluid">
+                    <div class="navbar-nav mx-auto">
+                        <button class="btn btn-outline-primary mx-1" onclick="buscarpordia('')">TODOS</button>
+                        <button class="btn btn-outline-primary mx-1" onclick="buscarpordia('lunes')">Lunes</button>
+                        <button class="btn btn-outline-primary mx-1" onclick="buscarpordia('martes')">Martes</button>
+                        <button class="btn btn-outline-primary mx-1" onclick="buscarpordia('miercoles')">Miércoles</button>
+                        <button class="btn btn-outline-primary mx-1" onclick="buscarpordia('jueves')">Jueves</button>
+                        <button class="btn btn-outline-primary mx-1" onclick="buscarpordia('viernes')">Viernes</button>
+                        <button class="btn btn-outline-primary mx-1" onclick="buscarpordia('sabado')">Sabado</button>
+                    </div>
                 </div>
             </nav>
 
-            <!-- Contenido principal -->
-            <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4 py-4">
-                <!-- Encabezado de página -->
-                <div class="page-header">
-                    <h1>Gestión de Horarios</h1>
-                    <p>Administra los horarios de atención de los médicos</p>
-                </div>
-
-                <!-- Barra de búsqueda -->
-                <div class="search-box">
-                    <form class="row g-3" action="${pageContext.request.contextPath}/admin/horarios" method="get">
-                        <div class="col-md-8">
-                            <div class="input-group">
-                                <input type="text" class="form-control" name="buscar" placeholder="Buscar por médico o día...">
-                                <button class="btn btn-primary" type="submit">
-                                    <i class="bi bi-search"></i> Buscar
-                                </button>
-                            </div>
-                        </div>
-                        <div class="col-md-4 text-end">
-                            <button type="button" class="btn btn-success" data-bs-toggle="modal" data-bs-target="#horarioModal">
-                                <i class="bi bi-plus-lg"></i> Nuevo Horario
-                            </button>
-                        </div>
-                    </form>
-                </div>
-
-                <!-- Tabla de horarios -->
-                <div class="card">
-                    <div class="card-body">
-                        <div class="table-responsive">
-                            <table class="table table-hover">
-                                <thead>
-                                    <tr>
-                                        <th>Médico</th>
-                                        <th>Día</th>
-                                        <th>Horario</th>
-                                        <th>Acciones</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    <c:forEach items="${horarios}" var="horario">
-                                        <tr>
-                                            <td>
-                                                <div class="schedule-info">
-                                                    <div class="schedule-icon">
-                                                        <i class="bi bi-person-badge"></i>
-                                                    </div>
-                                                    <div class="schedule-details">
-                                                        <span class="schedule-day">Dr. ${horario.doctor.nombres} ${horario.doctor.apellidos}</span>
-                                                    </div>
-                                                </div>
-                                            </td>
-                                            <td>${horario.diaSemana}</td>
-                                            <td>${horario.horaInicio} - ${horario.horaFin}</td>
-                                            <td>
-                                                <div class="btn-group">
-                                                    <button class="btn btn-sm btn-primary btn-action" onclick="editarHorario('${horario.id}')">
-                                                        <i class="bi bi-pencil"></i>
-                                                    </button>
-                                                    <button class="btn btn-sm btn-danger btn-action" onclick="eliminarHorario('${horario.id}')">
-                                                        <i class="bi bi-trash"></i>
-                                                    </button>
-                                                </div>
-                                            </td>
-                                        </tr>
-                                    </c:forEach>
-                                </tbody>
-                            </table>
-                        </div>
+            <!-- Tabla de horarios -->
+            <div class="card">
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                            <tr>
+                                <th>Médico</th>
+                                <th>Día</th>
+                                <th>Horario</th>
+                                <th>Acciones</th>
+                            </tr>
+                            </thead>
+                            <tbody id="horariosTableBody">
+                            <c:forEach items="${horarios}" var="horario">
+                                <tr>
+                                    <td>
+                                        <div class="schedule-info">
+                                            <div class="schedule-icon">
+                                                <i class="bi bi-person-badge"></i>
+                                            </div>
+                                            <div class="schedule-details">
+                                                <span class="schedule-day">Dr. ${horario.nombreDoctor} ${horario.apellidoDoctor}</span>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td>${horario.diaSemana}</td>
+                                    <td>${horario.horaInicio} - ${horario.horaFin}</td>
+                                    <td>
+                                        <div class="btn-group">
+                                            <button class="btn btn-sm btn-primary btn-action"
+                                                    data-bs-toggle="modal" data-bs-target="#horarioModal"
+                                                    title="Editar horario"
+                                                    onclick="editarHorario('${horario.id}')">
+                                                <i class="bi bi-pencil"></i>
+                                            </button>
+                                            <button class="btn btn-sm btn-danger btn-action"
+                                                    data-bs-toggle="modal" data-bs-target="#confirmacionModal"
+                                                    title="Editar horario"
+                                                    onclick="eliminarHorario('${horario.id}')">
+                                                <i class="bi bi-trash"></i>
+                                            </button>
+                                        </div>
+                                        <div id="informacion${horario.id}"
+                                             data-idDoctor="${horario.doctorId}"
+                                             data-doctorNombre="${horario.nombreDoctor}"
+                                             data-doctorApellido="${horario.apellidoDoctor}"
+                                             data-diaSemana="${horario.diaSemana}"
+                                             data-horaInicio="${horario.horaInicio}"
+                                             data-horaFin="${horario.horaFin}"
+                                        ></div>
+                                    </td>
+                                </tr>
+                            </c:forEach>
+                            </tbody>
+                        </table>
                     </div>
                 </div>
-            </main>
-        </div>
+            </div>
+        </main>
     </div>
+</div>
 
-    <!-- Modal para crear/editar horario -->
-    <div class="modal fade" id="horarioModal" tabindex="-1">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="horarioModalLabel">Nuevo Horario</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                </div>
-                <div class="modal-body">
-                    <form id="horarioForm" class="needs-validation" novalidate>
-                        <input type="hidden" id="horarioId">
-                        
-                        <div class="mb-3">
-                            <label for="doctorId" class="form-label required-field">Doctor</label>
-                            <select class="form-select" id="doctorId" name="doctorId" required>
-                                <option value="">Seleccione un doctor</option>
-                                <!-- Aquí se cargarán los doctores dinámicamente -->
-                            </select>
-                            <div class="invalid-feedback">
-                                Por favor seleccione un doctor.
-                            </div>
+<!-- Modal para crear/editar horario -->
+<div class="modal fade" id="horarioModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="horarioModalLabel">Nuevo Horario</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="horarioForm" action="${pageContext.request.contextPath}/admin/horario/horarios/agregar" method="post" class="needs-validation" novalidate>
+                    <div class="mb-3">
+                        <label for="doctorId" class="form-label required-field">Doctor</label>
+                        <select class="form-select" id="doctorId" name="doctorId" required>
+                            <option value="">Seleccione un doctor</option>
+                            <c:forEach items="${doctores}" var="doctor">
+                                <option value="${doctor.id}">${doctor.nombres} ${doctor.apellidos}  || ${doctor.especialidad.nombre}</option>
+                            </c:forEach>
+                        </select>
+                        <div class="invalid-feedback">
+                            Por favor seleccione un doctor.
                         </div>
-                        
-                        <div class="mb-3">
-                            <label for="diaSemana" class="form-label required-field">Día de la Semana</label>
-                            <select class="form-select" id="diaSemana" name="diaSemana" required>
-                                <option value="">Seleccione un día</option>
-                                <option value="Lunes">Lunes</option>
-                                <option value="Martes">Martes</option>
-                                <option value="Miércoles">Miércoles</option>
-                                <option value="Jueves">Jueves</option>
-                                <option value="Viernes">Viernes</option>
-                                <option value="Sábado">Sábado</option>
-                                <option value="Domingo">Domingo</option>
-                            </select>
-                            <div class="invalid-feedback">
-                                Por favor seleccione un día.
-                            </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="diaSemana" class="form-label required-field">Día de la Semana</label>
+                        <select class="form-select" id="diaSemana" name="diaSemana" required>
+                            <option value="">Seleccione un día</option>
+                            <option value="Lunes">Lunes</option>
+                            <option value="Martes">Martes</option>
+                            <option value="Miercoles">Miércoles</option>
+                            <option value="Jueves">Jueves</option>
+                            <option value="Viernes">Viernes</option>
+                            <option value="Sabado">Sábado</option>
+                        </select>
+                        <div class="invalid-feedback">
+                            Por favor seleccione un día.
                         </div>
-                        
-                        <div class="mb-3">
-                            <label for="horaInicio" class="form-label required-field">Hora de Inicio</label>
-                            <input type="time" class="form-control" id="horaInicio" name="horaInicio" required>
-                            <div class="invalid-feedback">
-                                Por favor ingrese la hora de inicio.
-                            </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="horaInicio" class="form-label required-field">Hora de Inicio</label>
+                        <input type="time" class="form-control" id="horaInicio" name="horaInicio" required>
+                        <div class="invalid-feedback">
+                            Por favor ingrese la hora de inicio.
                         </div>
-                        
-                        <div class="mb-3">
-                            <label for="horaFin" class="form-label required-field">Hora de Fin</label>
-                            <input type="time" class="form-control" id="horaFin" name="horaFin" required>
-                            <div class="invalid-feedback">
-                                Por favor ingrese la hora de fin.
-                            </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="horaFin" class="form-label required-field">Hora de Fin</label>
+                        <input type="time" class="form-control" id="horaFin" name="horaFin" required>
+                        <div class="invalid-feedback">
+                            Por favor ingrese la hora de fin.
                         </div>
-                    </form>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-                    <button type="button" class="btn btn-primary" onclick="guardarHorario()">Guardar</button>
-                </div>
+                    </div>
+                    <input type="hidden" id="horarioId" name="id" value="">
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                        <button type="submit" class="btn btn-primary" data-modo="agregar" id="guardar">Guardar</button>
+                    </div>
+                </form>
             </div>
         </div>
     </div>
+</div>
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    <script>
-        // Función para editar horario
-        function editarHorario(id) {
-            fetch('${pageContext.request.contextPath}/admin/horarios/' + id)
-                .then(response => response.json())
-                .then(horario => {
-                    document.getElementById('horarioId').value = horario.id;
-                    document.getElementById('doctorId').value = horario.doctorId;
-                    document.getElementById('diaSemana').value = horario.diaSemana;
-                    document.getElementById('horaInicio').value = horario.horaInicio;
-                    document.getElementById('horaFin').value = horario.horaFin;
-                    
-                    document.getElementById('horarioModalLabel').textContent = 'Editar Horario';
-                    new bootstrap.Modal(document.getElementById('horarioModal')).show();
-                })
-                .catch(error => {
-                    console.error('Error:', error);
-                    alert('Error al cargar los datos del horario');
-                });
-        }
+<!-- Modal de Eliminación -->
 
-        // Función para eliminar horario
-        function eliminarHorario(id) {
-            if (confirm('¿Está seguro de eliminar este horario?')) {
-                fetch('${pageContext.request.contextPath}/admin/horarios/' + id, {
-                    method: 'DELETE'
-                })
-                .then(response => {
-                    if (response.ok) {
-                        window.location.reload();
-                    } else {
-                        throw new Error('Error al eliminar el horario');
-                    }
-                })
-                .catch(error => {
-                    console.error('Error:', error);
-                    alert('Error al eliminar el horario');
-                });
+<dialog class="modal fade" id="confirmacionModal" tabindex="-1"
+        aria-labelledby="eliminarModalLabel"
+        aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header bg-danger text-white">
+                <h5 class="modal-title" id="eliminarModalLabel">
+                    <i class="bi bi-exclamation-triangle me-2"></i>
+                    Confirmar Eliminación
+                </h5>
+                <button type="button"
+                        class="btn-close btn-close-white"
+                        data-bs-dismiss="modal"
+                        aria-label="Cerrar"></button>
+            </div>
+            <div class="modal-body">
+                <div class="alert alert-danger mb-3">
+                    <i class="bi bi-exclamation-circle me-2"></i>
+                    Esta acción no se puede deshacer.
+                </div>
+
+                <div class="card mb-3">
+                    <div class="card-header bg-light">
+                        <h6 class="mb-0">Información del horario</h6>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-6 mb-2">
+                                <label class="fw-bold">Nombre doctor</label>
+                                <p id="nombreDoctorEliminar"></p>
+                            </div>
+                            <div class="col-md-6 mb-2">
+                                <label class="fw-bold">Día de la semana</label>
+                                <p id="diaSemanaEliminar"></p>
+                            </div>
+                            <div class="col-md-6 mb-2">
+                                <label class="fw-bold">Hora de inicio</label>
+                                <p id="horaInicioEliminar"></p>
+                            </div>
+                            <div class="col-md-6 mb-2">
+                                <label class="fw-bold">Hora de fin</label>
+                                <p id="horaFinEliminar"></p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <p class="text-center mb-0">
+                    <i class="bi bi-question-circle me-2"></i>
+                    ¿Está seguro que desea eliminar este horario?
+                </p>
+            </div>
+            <div class="modal-footer">
+                <button type="button"
+                        class="btn btn-secondary"
+                        data-bs-dismiss="modal">
+                    <i class="bi bi-x-circle me-1"></i>
+                    Cancelar
+                </button>
+                <form action="${pageContext.request.contextPath}/admin/horario/horarios/eliminar"
+                      method="POST"
+                      class="d-inline">
+                    <input type="hidden" id="id_horarioEliminar" name="id" value="">
+                    <button type="submit"
+                            class="btn btn-danger">
+                        <i class="bi bi-trash me-1"></i>
+                        Eliminar Horario
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</dialog>
+
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+
+    document.addEventListener("DOMContentLoaded", function () {
+        const form = document.getElementById("horarioForm");
+        const botonGuardar = document.getElementById("guardar");
+
+        // Escuchar el evento submit del formulario
+        form.addEventListener("submit", function (e) {
+            const modo = botonGuardar.dataset.modo;
+
+            // Define la URL base
+            let actionURL = "";
+
+            // Define la URL dependiendo del modo
+            if (modo === "agregar") {
+                actionURL = `${pageContext.request.contextPath}/admin/horario/horarios/agregar`;
+            } else if (modo === "actualizar") {
+                actionURL = `${pageContext.request.contextPath}/admin/horario/horarios/actualizar`;
             }
-        }
 
-        // Función para guardar horario
-        function guardarHorario() {
-            const form = document.getElementById('horarioForm');
-            if (!form.checkValidity()) {
-                form.classList.add('was-validated');
-                return;
-            }
-
-            const horarioData = {
-                id: document.getElementById('horarioId').value,
-                doctorId: document.getElementById('doctorId').value,
-                diaSemana: document.getElementById('diaSemana').value,
-                horaInicio: document.getElementById('horaInicio').value,
-                horaFin: document.getElementById('horaFin').value
-            };
-
-            const method = horarioData.id ? 'PUT' : 'POST';
-            const url = '${pageContext.request.contextPath}/admin/horarios' + (horarioData.id ? '/' + horarioData.id : '');
-
-            fetch(url, {
-                method: method,
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify(horarioData)
-            })
-            .then(response => {
-                if (response.ok) {
-                    window.location.reload();
-                } else {
-                    throw new Error('Error al guardar el horario');
-                }
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                alert('Error al guardar el horario');
-            });
-        }
-
-        // Cargar doctores al iniciar
-        window.addEventListener('load', function() {
-            fetch('${pageContext.request.contextPath}/admin/doctores')
-                .then(response => response.json())
-                .then(doctores => {
-                    const select = document.getElementById('doctorId');
-                    doctores.forEach(doctor => {
-                        const option = document.createElement('option');
-                        option.value = doctor.id;
-                        option.textContent = 'Dr. ' + doctor.nombres + ' ' + doctor.apellidos;
-                        select.appendChild(option);
-                    });
-                })
-                .catch(error => {
-                    console.error('Error:', error);
-                    alert('Error al cargar los doctores');
-                });
+            // Establece el action al formulario antes de enviarlo
+            form.action = actionURL;
         });
-    </script>
+    });
+
+
+    // Función para editar horario
+    function editarHorario(id) {
+        console.log(id);
+        const div = document.getElementById('informacion' + id);
+
+
+        const doctorId = div.dataset.iddoctor;
+        const diaSemana = div.dataset.diasemana;
+        const horaInicio = div.dataset.horainicio;
+        const horaFin = div.dataset.horafin;
+
+
+        console.log({
+            doctorId,
+            diaSemana,
+            horaInicio,
+            horaFin
+        });
+
+
+        document.getElementById('doctorId').value = doctorId;
+        document.getElementById('horarioId').value = id;
+        document.getElementById('diaSemana').value = diaSemana;
+        document.getElementById('horaInicio').value = horaInicio;
+        document.getElementById('horaFin').value = horaFin;
+
+
+        document.getElementById('horarioModalLabel').innerHTML = 'Editar Horario';
+        document.getElementById('guardar').dataset.modo = 'actualizar';
+
+    }
+
+    // Función para eliminar horario
+    function eliminarHorario(id) {
+        const div = document.getElementById('informacion' + id);
+
+        const doctorNombre = div.dataset.doctornombre;
+        const doctorApellido = div.dataset.doctorapellido;
+        const diaSemana = div.dataset.diasemana;
+        const horaInicio = div.dataset.horainicio;
+        const horaFin = div.dataset.horafin;
+
+        document.getElementById('id_horarioEliminar').value = id;
+        document.getElementById('nombreDoctorEliminar').innerHTML = `${doctorNombre} ${doctorApellido}`;
+        document.getElementById('diaSemanaEliminar').innerHTML = diaSemana;
+        document.getElementById('horaInicioEliminar').innerHTML = horaInicio;
+        document.getElementById('horaFinEliminar').innerHTML = horaFin;
+
+    }
+
+    document.addEventListener("DOMContentLoaded", function () {
+        const modal = document.getElementById('horarioModal');
+        const form = document.getElementById('horarioForm');
+        const modalTitle = document.getElementById('horarioModalLabel');
+        const botonGuardar = document.getElementById('guardar');
+
+        modal.addEventListener('hidden.bs.modal', function () {
+            // Resetear formulario
+            form.reset();
+
+            // Restaurar valores predeterminados
+            modalTitle.textContent = 'Nueva horario';
+            botonGuardar.textContent = 'Guardar';
+            botonGuardar.dataset.modo = 'agregar';
+
+            // Limpiar campo oculto de ID
+            document.getElementById('id_horarioActualizar').value = '';
+        });
+    });
+
+    // Búsqueda en la tabla (solo frontend)
+    function buscarfront() {
+        const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+        const rows = document.getElementById('horariosTableBody').getElementsByTagName('tr');
+        for (let row of rows) {
+            const text = row.textContent.toLowerCase();
+            row.style.display = text.includes(searchTerm) ? '' : 'none';
+        }
+    }
+
+    function buscarpordia(dia) {
+        const rows = document.getElementById('horariosTableBody').getElementsByTagName('tr');
+        for (let row of rows) {
+            const text = row.textContent.toLowerCase();
+            row.style.display = text.includes(dia) ? '' : 'none';
+        }
+    }
+
+</script>
 </body>
 </html> 

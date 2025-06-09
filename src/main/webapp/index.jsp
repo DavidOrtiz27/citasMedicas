@@ -1,10 +1,12 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
+<%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
+
+<fmt:setLocale value="${param.lang != null ? param.lang : 'es'}" />
+<fmt:setBundle basename="messages" />
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sistema de Gestión de Citas Médicas</title>
+    <title><fmt:message key="index.title"/></title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.7.2/font/bootstrap-icons.css" rel="stylesheet">
     <style>
@@ -217,13 +219,23 @@
     <nav class="navbar navbar-expand-lg navbar-dark">
         <div class="container">
             <a class="navbar-brand" href="${pageContext.request.contextPath}/">
-                <i class="bi bi-hospital"></i> Sistema de Citas Médicas
+                <i class="bi bi-hospital"></i> <fmt:message key="index.systemName" />
             </a>
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
                 <span class="navbar-toggler-icon"></span>
             </button>
             <div class="collapse navbar-collapse" id="navbarNav">
                 <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="${pageContext.request.contextPath}/vistas/publico/consultaCitas.jsp">
+                            <i class="bi bi-search"></i> <fmt:message key="index.query" />
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="${pageContext.request.contextPath}/vistas/publico/solicitarCita.jsp">
+                            <i class="bi bi-calendar-plus"></i> <fmt:message key="index.make" />
+                        </a>
+                    </li>
                     <li class="nav-item">
                         <a class="nav-link" href="${pageContext.request.contextPath}/publico/solicitar">
                             <i class="bi bi-calendar-plus"></i> Solicitar Cita
@@ -237,6 +249,8 @@
                     <li class="nav-item">
                         <a class="nav-link" href="${pageContext.request.contextPath}/admin/login">
                             <i class="bi bi-box-arrow-in-right"></i> Acceso Administrativo
+                        <a class="nav-link" href="${pageContext.request.contextPath}/vistas/login.jsp">
+                            <i class="bi bi-box-arrow-in-right"></i> <fmt:message key="index.login" />
                         </a>
                     </li>
                 </ul>
@@ -252,9 +266,20 @@
             <div class="d-flex justify-content-center gap-3">
                 <a href="${pageContext.request.contextPath}/publico/solicitar" class="btn btn-primary btn-hero">
                     <i class="bi bi-calendar-plus"></i> Solicitar Cita
+    <section class="hero-section text-center">
+        <div class="container">
+            <h1> <fmt:message key="index.header" /></h1>
+            <p class="lead"> <fmt:message key="index.lead" /></p>
+            <div class="d-flex justify-content-center gap-4">
+                <a href="${pageContext.request.contextPath}/publico/solicitar" 
+                   class="btn btn-primary btn-hero">
+                    <i class="bi bi-calendar-plus"></i> <fmt:message key="index.make" />
                 </a>
                 <a href="${pageContext.request.contextPath}/publico/consultar" class="btn btn-outline-light btn-hero">
                     <i class="bi bi-search"></i> Consultar Citas
+                <a href="${pageContext.request.contextPath}/vistas/publico/consultaCitas.jsp" 
+                   class="btn btn-outline-light btn-hero">
+                    <i class="bi bi-search"></i> <fmt:message key="index.query" />
                 </a>
             </div>
         </div>
@@ -264,8 +289,8 @@
     <section class="feature-section">
         <div class="container">
             <div class="section-title">
-                <h2>Nuestros Servicios</h2>
-                <p>Ofrecemos una plataforma completa para la gestión de citas médicas</p>
+                <h2><fmt:message key="index.services.header" /> </h2>
+                <p><fmt:message key="index.services.paragraph" /></p>
             </div>
             <div class="row g-4">
                 <div class="col-md-4">
@@ -273,6 +298,8 @@
                         <div class="icon-circle">
                             <i class="bi bi-calendar-check"></i>
                         </div>
+                        <h5><fmt:message key="index.services.cardone" /></h5>
+                        <p><fmt:message key="index.services.cardparagraph" /></p>
                         <h5>Solicitud de Citas</h5>
                         <p>Solicita tus citas médicas de manera rápida y sencilla, eligiendo la especialidad y el horario que mejor te convenga.</p>
                     </div>
@@ -282,6 +309,8 @@
                         <div class="icon-circle">
                             <i class="bi bi-search"></i>
                         </div>
+                        <h5><fmt:message key="index.services.cardtwo" /></h5>
+                        <p><fmt:message key="index.services.cardtwoparagraph" /></p>
                         <h5>Consulta de Citas</h5>
                         <p>Consulta el estado de tus citas médicas en cualquier momento, con solo ingresar tu documento de identidad.</p>
                     </div>
@@ -291,6 +320,8 @@
                         <div class="icon-circle">
                             <i class="bi bi-bell"></i>
                         </div>
+                        <h5><fmt:message key="index.services.cardthree" /></h5>
+                        <p><fmt:message key="index.services.cardthreeparagraph" /></p>
                         <h5>Notificaciones</h5>
                         <p>Recibe notificaciones sobre el estado de tus citas y recordatorios para no olvidar tus consultas médicas.</p>
                     </div>
@@ -303,6 +334,13 @@
     <footer>
         <div class="container">
             <div class="row">
+                <div class="col-md-6">
+                    <h5>Contacto</h5>
+                    <p>
+                        <i class="bi bi-telephone"></i> <fmt:message key="index.footer.phone" /><br>
+                        <i class="bi bi-envelope"></i> <fmt:message key="index.footer.email" /> <br>
+                        <i class="bi bi-geo-alt"></i> <fmt:message key="index.footer.address" />
+                    </p>
                 <div class="col-md-4">
                     <h5><i class="bi bi-geo-alt"></i> Ubicación</h5>
                     <p>Av. Principal #123<br>Ciudad, País</p>
@@ -311,12 +349,20 @@
                     <h5><i class="bi bi-telephone"></i> Contacto</h5>
                     <p>Tel: (123) 456-7890<br>Email: info@citasmedicas.com</p>
                 </div>
+                <div class="col-md-6 text-md-end">
+                    <h5>Horario de Atención</h5>
+                    <p>
+                        <i class="bi bi-clock"></i> <fmt:message key="index.footer.schedule" /><br>
+                        <i class="bi bi-clock"></i> <fmt:message key="index.footer.scheduleweekend" /><br>
+                        <i class="bi bi-x-circle"></i> <fmt:message key="index.footer.shcedulesunday" />
+                    </p>
                 <div class="col-md-4">
                     <h5><i class="bi bi-clock"></i> Horario</h5>
                     <p>Lunes a Viernes: 8:00 AM - 6:00 PM<br>Sábados: 9:00 AM - 1:00 PM</p>
                 </div>
             </div>
             <div class="footer-bottom">
+                <p>&copy; <fmt:message key="index.footer.copyright" /> </p>
                 <p>&copy; 2024 Sistema de Citas Médicas. Todos los derechos reservados.</p>
             </div>
         </div>
