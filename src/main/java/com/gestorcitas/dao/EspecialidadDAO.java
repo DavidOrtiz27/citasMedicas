@@ -12,22 +12,22 @@ import com.gestorcitas.modelo.Especialidad;
 import com.gestorcitas.util.DatabaseUtil;
 
 public class EspecialidadDAO {
-
-    public List<Especialidad> listarTodos() throws SQLException {
+    
+    public List<Especialidad> listarTodas() throws SQLException {
         List<Especialidad> especialidades = new ArrayList<>();
         String sql = "SELECT * FROM especialidades ORDER BY nombre";
-
+        
         try (Connection conn = DatabaseUtil.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql);
              ResultSet rs = stmt.executeQuery()) {
-
+            
             while (rs.next()) {
                 especialidades.add(mapearEspecialidad(rs));
             }
         }
         return especialidades;
     }
-
+    
     public Especialidad buscarPorId(int id) throws SQLException {
         String sql = "SELECT * FROM especialidades WHERE id = ?";
 
@@ -76,16 +76,47 @@ public class EspecialidadDAO {
             stmt.executeUpdate();
         }
     }
-
+    
     public boolean eliminar(int id) throws SQLException {
-        String sql = "DELETE FROM especialidades WHERE id = ?";
+        String sqlCitas = "DELETE FROM citas WHERE doctor_id IN (SELECT id FROM doctores WHERE especialidad_id = ?)";
+        String sqlDoctores = "DELETE FROM doctores WHERE especialidad_id = ?";
+        String sqlEspecialidad = "DELETE FROM especialidades WHERE id = ?";
 
-        try (Connection conn = DatabaseUtil.getConnection();
-             PreparedStatement stmt = conn.prepareStatement(sql)) {
-            stmt.setInt(1, id);
-            stmt.executeUpdate();
+        try (Connection conn = DatabaseUtil.getConnection()) {
+            conn.setAutoCommit(false);
+            try {
+                // Primero eliminar las citas asociadas
+                try (PreparedStatement stmt = conn.prepareStatement(sqlCitas)) {
+                    stmt.setInt(1, id);
+                    stmt.executeUpdate();
+                }
+
+                // Luego eliminar los doctores asociados
+                try (PreparedStatement stmt = conn.prepareStatement(sqlDoctores)) {
+                    stmt.setInt(1, id);
+                    stmt.executeUpdate();
+                }
+
+                // Finalmente eliminar la especialidad
+                try (PreparedStatement stmt = conn.prepareStatement(sqlEspecialidad)) {
+                    stmt.setInt(1, id);
+                    int filasAfectadas = stmt.executeUpdate();
+                    
+                    if (filasAfectadas > 0) {
+                        conn.commit();
+                        return true;
+                    } else {
+                        conn.rollback();
+                        return false;
+                    }
+                }
+            } catch (SQLException e) {
+                conn.rollback();
+                throw e;
+            } finally {
+                conn.setAutoCommit(true);
+            }
         }
-        return false;
     }
 
     public int contarTotal() throws SQLException {
@@ -99,7 +130,26 @@ public class EspecialidadDAO {
         }
         return 0;
     }
-
+    
+    public List<Especialidad> listarTodos() throws SQLException {
+        List<Especialidad> especialidades = new ArrayList<>();
+        String sql = "SELECT * FROM especialidades ORDER BY nombre";
+        
+        try (Connection conn = DatabaseUtil.getConnection();
+             Statement stmt = conn.createStatement();
+             ResultSet rs = stmt.executeQuery(sql)) {
+            
+            while (rs.next()) {
+                Especialidad especialidad = new Especialidad();
+                especialidad.setId(rs.getInt("id"));
+                especialidad.setNombre(rs.getString("nombre"));
+                especialidad.setDescripcion(rs.getString("descripcion"));
+                especialidades.add(especialidad);
+            }
+        }
+        return especialidades;
+    }
+    
     private Especialidad mapearEspecialidad(ResultSet rs) throws SQLException {
         Especialidad especialidad = new Especialidad();
         especialidad.setId(rs.getInt("id"));

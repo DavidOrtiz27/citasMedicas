@@ -14,8 +14,9 @@ import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
 
-@WebServlet("/captcha")
+@WebServlet(name = "CaptchaServlet", urlPatterns = {"/captcha", "/publico/captcha"})
 public class CaptchaServlet extends HttpServlet {
     private static final long serialVersionUID = 1L;
     private static final int WIDTH = 150;
@@ -26,22 +27,49 @@ public class CaptchaServlet extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response) 
             throws ServletException, IOException {
-        // Generar código CAPTCHA
-        String captchaCode = generateCaptchaCode();
-        
-        // Guardar código en la sesión
-        request.getSession().setAttribute("captcha", captchaCode);
-        
-        // Generar imagen
-        BufferedImage image = generateCaptchaImage(captchaCode);
-        
-        // Enviar imagen como respuesta
-        response.setContentType("image/png");
-        response.setHeader("Cache-Control", "no-store, no-cache, must-revalidate");
-        response.setHeader("Pragma", "no-cache");
-        response.setDateHeader("Expires", 0);
-        
-        ImageIO.write(image, "png", response.getOutputStream());
+        try {
+            // Asegurar que la sesión existe y no se reinicia
+            HttpSession session = request.getSession(false);
+            if (session == null) {
+                session = request.getSession(true);
+            }
+            
+            // Generar código CAPTCHA
+            String captchaCode = generateCaptchaCode();
+            
+            // Log para depuración
+            System.out.println("Nuevo CAPTCHA generado: [" + captchaCode + "]");
+            System.out.println("ID de sesión: " + session.getId());
+            
+            // Guardar código en la sesión
+            session.setAttribute("captcha", captchaCode);
+            
+            // Log para verificar que se guardó en sesión
+            String captchaGuardado = (String) session.getAttribute("captcha");
+            System.out.println("CAPTCHA guardado en sesión: [" + captchaGuardado + "]");
+            
+            // Generar imagen
+            BufferedImage image = generateCaptchaImage(captchaCode);
+            
+            // Enviar imagen como respuesta
+            response.setContentType("image/png");
+            response.setHeader("Cache-Control", "no-store, no-cache, must-revalidate");
+            response.setHeader("Pragma", "no-cache");
+            response.setDateHeader("Expires", 0);
+            response.setHeader("Access-Control-Allow-Origin", "*");
+            
+            // Escribir la imagen en la respuesta
+            try (var out = response.getOutputStream()) {
+                ImageIO.write(image, "png", out);
+                out.flush();
+            }
+            
+            System.out.println("Imagen CAPTCHA enviada correctamente");
+        } catch (Exception e) {
+            System.err.println("Error al generar CAPTCHA: " + e.getMessage());
+            e.printStackTrace();
+            response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Error al generar CAPTCHA");
+        }
     }
     
     private String generateCaptchaCode() {

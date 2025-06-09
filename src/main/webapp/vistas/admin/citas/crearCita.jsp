@@ -110,7 +110,7 @@
                 </a>
             </li>
             <li class="nav-item">
-                <a class="nav-link active" href="${pageContext.request.contextPath}/admin/citas/citas">
+                <a class="nav-link active" href="${pageContext.request.contextPath}/admin/citas">
                     <i class="bi bi-calendar-check"></i> Citas
                 </a>
             </li>
@@ -137,7 +137,7 @@
         <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
             <h1 class="h2">Crear Nueva Cita</h1>
             <div class="btn-toolbar mb-2 mb-md-0">
-                <a href="${pageContext.request.contextPath}/admin/citas/citas" class="btn btn-secondary">
+                <a href="${pageContext.request.contextPath}/admin/citas" class="btn btn-secondary">
                     <i class="bi bi-arrow-left"></i> Volver
                 </a>
             </div>
@@ -154,7 +154,7 @@
         <!-- Formulario de creación -->
         <div class="card">
             <div class="card-body">
-                <form action="${pageContext.request.contextPath}/admin/citas/citas" method="post" id="citaForm">
+                <form action="${pageContext.request.contextPath}/admin/citas" method="post" id="citaForm">
                     <input type="hidden" name="accion" value="crear">
                     
                     <!-- Paciente -->

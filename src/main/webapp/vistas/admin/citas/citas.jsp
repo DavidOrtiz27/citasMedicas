@@ -302,53 +302,10 @@
                     <h5 class="modal-title" id="citaModalLabel">Nueva Cita</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
-                <div class="modal-body">
-                    <form id="citaForm" action="${pageContext.request.contextPath}/admin/citas/citas" method="post" class="needs-validation" novalidate>
-                        <input type="hidden" name="accion" value="crear">
-                        
-                        <div class="mb-3">
-                            <label for="buscarPaciente" class="form-label required-field">Buscar Paciente</label>
-                            <input type="text" class="form-control" id="buscarPaciente" placeholder="Ingrese nombre, apellido o DNI del paciente">
-                        </div>
-                        
-                        <div class="mb-3">
-                            <label for="paciente" class="form-label required-field">Paciente</label>
-                            <select class="form-select" id="paciente" name="paciente" required>
-                                <option value="">Seleccione un paciente</option>
-                            </select>
-                            <div class="invalid-feedback">
-                                Por favor seleccione un paciente.
-                            </div>
-                        </div>
-                        
-                        <div class="mb-3">
-                            <label for="especialidad" class="form-label required-field">Especialidad</label>
-                            <select class="form-select" id="especialidad" required>
-                                <option value="">Seleccione una especialidad</option>
-                            </select>
-                            <div class="invalid-feedback">
-                                Por favor seleccione una especialidad.
-                            </div>
-                        </div>
-                        
-                        <div class="mb-3">
-                            <label for="doctor" class="form-label required-field">Doctor</label>
-                            <select class="form-select" id="doctor" name="doctor" required>
-                                <option value="">Seleccione un doctor</option>
-                            </select>
-                            <div class="invalid-feedback">
-                                Por favor seleccione un doctor.
-                            </div>
-                        </div>
-                        
-                        <div class="mb-3">
-                            <label for="fecha" class="form-label required-field">Fecha</label>
-                            <input type="date" class="form-control" id="fecha" name="fecha" required>
-                            <div class="invalid-feedback">
-                                Por favor seleccione una fecha.
-                            </div>
-                        </div>
-                        
+                <form action="${pageContext.request.contextPath}/admin/citas" method="post">
+                    <div class="modal-body">
+                        <input type="hidden" name="accion" value="cancelar">
+                        <input type="hidden" name="id" id="citaIdCancelar">
                         <div class="mb-3">
                             <label for="hora" class="form-label required-field">Hora</label>
                             <input type="time" class="form-control" id="hora" name="hora" required>

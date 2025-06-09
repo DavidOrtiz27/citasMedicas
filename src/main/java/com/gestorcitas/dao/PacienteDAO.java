@@ -249,18 +249,11 @@ public class PacienteDAO {
     
     public int contarTotal() throws SQLException {
         String sql = "SELECT COUNT(*) FROM pacientes";
-        Connection conn = null;
-        try {
-            conn = DatabaseUtil.getConnection();
-            try (PreparedStatement stmt = conn.prepareStatement(sql);
-                 ResultSet rs = stmt.executeQuery()) {
-                if (rs.next()) {
-                    return rs.getInt(1);
-                }
-            }
-        } finally {
-            if (conn != null) {
-                DatabaseUtil.releaseConnection(conn);
+        try (Connection conn = DatabaseUtil.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql);
+             ResultSet rs = stmt.executeQuery()) {
+            if (rs.next()) {
+                return rs.getInt(1);
             }
         }
         return 0;
@@ -318,5 +311,30 @@ public class PacienteDAO {
             }
         }
         return pacientes;
+    }
+
+    public Paciente buscarPorDocumento(String documento) throws SQLException {
+        String sql = "SELECT * FROM pacientes WHERE dni = ?";
+        
+        try (Connection conn = DatabaseUtil.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+            
+            stmt.setString(1, documento);
+            
+            try (ResultSet rs = stmt.executeQuery()) {
+                if (rs.next()) {
+                    Paciente paciente = new Paciente();
+                    paciente.setId(rs.getInt("id"));
+                    paciente.setNombres(rs.getString("nombres"));
+                    paciente.setApellidos(rs.getString("apellidos"));
+                    paciente.setDni(rs.getString("dni"));
+                    paciente.setFechaNacimiento(rs.getDate("fecha_nacimiento"));
+                    paciente.setTelefono(rs.getString("telefono"));
+                    paciente.setEmail(rs.getString("email"));
+                    return paciente;
+                }
+            }
+        }
+        return null;
     }
 } 

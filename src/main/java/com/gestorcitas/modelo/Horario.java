@@ -1,5 +1,7 @@
 package com.gestorcitas.modelo;
 
+import java.sql.Date;
+import java.sql.Time;
 import java.time.LocalTime;
 
 public class Horario {
@@ -11,6 +13,9 @@ public class Horario {
     private LocalTime horaInicio;
     private LocalTime horaFin;
     private boolean activo;
+    private Date fecha;
+    private Time hora;
+    private boolean disponible;
 
     public Horario() {
     }
@@ -90,4 +95,28 @@ public class Horario {
     public void setActivo(boolean activo) {
         this.activo = activo;
     }
-}
+
+    public Date getFecha() {
+        return fecha;
+    }
+
+    public void setFecha(Date fecha) {
+        this.fecha = fecha;
+    }
+
+    public Time getHora() {
+        return hora;
+    }
+
+    public void setHora(Time hora) {
+        this.hora = hora;
+    }
+
+    public boolean isDisponible() {
+        return disponible;
+    }
+
+    public void setDisponible(boolean disponible) {
+        this.disponible = disponible;
+    }
+} 

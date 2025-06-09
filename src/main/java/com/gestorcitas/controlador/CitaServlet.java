@@ -4,11 +4,10 @@ import java.io.IOException;
 import java.sql.SQLException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.Arrays;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
+import java.util.stream.Collectors;
+import java.util.Arrays;
 
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
@@ -29,14 +28,14 @@ import com.google.gson.Gson;
 import com.itextpdf.text.DocumentException;
 
 @WebServlet(urlPatterns = {
-    "/admin/citas/citas",           // GET: Listar citas, POST: Crear/Actualizar/Eliminar
-    "/admin/citas/crear",          // GET: Mostrar formulario de creación
-    "/admin/citas/editar/*",       // GET: Mostrar formulario de edición
-    "/admin/citas/comprobante/*",  // GET: Generar comprobante PDF
-    "/admin/citas/reporte",         // GET: Generar reporte Excel
-    "/admin/citas/buscarPaciente",  // GET: Buscar paciente por DNI o nombre
+    "/admin/citas",                // GET: Listar citas
+    "/admin/citas/crear",         // GET: Mostrar formulario de creación
+    "/admin/citas/editar/*",      // GET: Mostrar formulario de edición
+    "/admin/citas/comprobante/*", // GET: Generar comprobante PDF
+    "/admin/citas/reporte",       // GET: Generar reporte Excel
+    "/admin/citas/buscarPaciente", // GET: Buscar paciente por DNI o nombre
     "/admin/citas/doctoresPorEspecialidad", // GET: Obtener doctores por especialidad
-    "/admin/doctor/buscar"         // GET: Buscar doctor por ID
+    "/admin/doctor/buscar"        // GET: Buscar doctor por ID
 })
 public class CitaServlet extends HttpServlet {
     private static final long serialVersionUID = 1L;
@@ -62,7 +61,7 @@ public class CitaServlet extends HttpServlet {
         String pathInfo = request.getPathInfo();
         
         try {
-            if (servletPath.equals("/admin/citas/citas")) {
+            if (servletPath.equals("/admin/citas") && (pathInfo == null || pathInfo.equals("/"))) {
                 // Listar todas las citas
                 listarCitas(request, response);
             } else if (servletPath.equals("/admin/citas/crear")) {
@@ -80,7 +79,7 @@ public class CitaServlet extends HttpServlet {
             } else if (servletPath.equals("/admin/citas/buscarPaciente")) {
                 buscarPaciente(request, response);
             } else if (servletPath.equals("/admin/citas/doctoresPorEspecialidad")) {
-                obtenerDoctoresPorEspecialidad(request, response);
+                cargarDoctoresPorEspecialidad(request, response);
             } else if (servletPath.equals("/admin/doctor/buscar")) {
                 buscarDoctor(request, response);
             } else {
@@ -89,10 +88,10 @@ public class CitaServlet extends HttpServlet {
         } catch (SQLException e) {
             e.printStackTrace();
             request.setAttribute("error", "Error al procesar la solicitud: " + e.getMessage());
-            if (servletPath.equals("/admin/citas/citas")) {
+            if (servletPath.equals("/admin/citas")) {
                 request.getRequestDispatcher("/vistas/admin/citas/citas.jsp").forward(request, response);
             } else {
-                response.sendRedirect(request.getContextPath() + "/admin/citas/citas");
+                response.sendRedirect(request.getContextPath() + "/admin/citas");
             }
         }
     }
@@ -168,96 +167,41 @@ public class CitaServlet extends HttpServlet {
 
     private void mostrarFormularioCreacion(HttpServletRequest request, HttpServletResponse response) 
             throws SQLException, ServletException, IOException {
-        try {
-            // Cargar datos para los selectores
-            List<Paciente> pacientes = pacienteDAO.listarTodos();
-            List<Especialidad> especialidades = especialidadDAO.listarTodas();
-            List<Doctor> doctores = doctorDAO.listarTodos();
-            
-            // Establecer la fecha mínima como hoy
-            SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
-            String fechaMinima = sdf.format(new Date());
-            
-            // Agregar los datos al request
-            request.setAttribute("pacientes", pacientes);
-            request.setAttribute("especialidades", especialidades);
-            request.setAttribute("doctores", doctores);
-            request.setAttribute("fechaMinima", fechaMinima);
-            
-            // Redirigir al formulario
-            request.getRequestDispatcher("/vistas/admin/citas/crearCita.jsp").forward(request, response);
-        } catch (SQLException e) {
-            e.printStackTrace();
-            request.setAttribute("error", "Error al cargar los datos: " + e.getMessage());
-            request.getRequestDispatcher("/vistas/admin/citas/citas.jsp").forward(request, response);
-        }
+        cargarDatosFormulario(request);
+        request.getRequestDispatcher("/vistas/admin/citas/crearCita.jsp").forward(request, response);
     }
 
     private void mostrarFormularioEdicion(HttpServletRequest request, HttpServletResponse response) 
             throws SQLException, ServletException, IOException {
+        String pathInfo = request.getPathInfo();
+        if (pathInfo == null || pathInfo.equals("/")) {
+            response.sendRedirect(request.getContextPath() + "/admin/citas");
+            return;
+        }
+        
         try {
-            int id = Integer.parseInt(request.getPathInfo().substring(1));
-            System.out.println("Buscando cita con ID: " + id);
-            
+            // Extraer el ID de la URL (eliminar el "/" inicial)
+            String idStr = pathInfo.substring(1);
+            int id = Integer.parseInt(idStr);
             Cita cita = citaDAO.buscarPorId(id);
-            System.out.println("Cita encontrada: " + (cita != null));
-            
             if (cita != null) {
-                // Cargar datos para los selectores
-                List<Paciente> pacientes = pacienteDAO.listarTodos();
-                List<Especialidad> especialidades = especialidadDAO.listarTodas();
+                request.setAttribute("cita", cita);
+                cargarDatosFormulario(request);
                 
-                // Obtener el doctor con su especialidad
-                Doctor doctor = doctorDAO.buscarPorId(cita.getDoctor().getId());
-                System.out.println("Doctor encontrado: " + (doctor != null));
-                if (doctor != null) {
-                    System.out.println("ID del doctor: " + doctor.getId());
-                    System.out.println("Nombre del doctor: " + doctor.getNombres() + " " + doctor.getApellidos());
-                    System.out.println("Especialidad del doctor: " + (doctor.getEspecialidad() != null ? doctor.getEspecialidad().getId() : "null"));
-                    cita.setDoctor(doctor);
-                }
-                
-                // Cargar doctores según la especialidad del doctor de la cita
-                List<Doctor> doctores;
-                if (doctor != null && doctor.getEspecialidad() != null) {
-                    System.out.println("Cargando doctores para especialidad: " + doctor.getEspecialidad().getId());
-                    doctores = doctorDAO.listarPorEspecialidad(doctor.getEspecialidad().getId());
-                    System.out.println("Doctores encontrados: " + doctores.size());
-                } else {
-                    System.out.println("Cargando todos los doctores");
-                    doctores = doctorDAO.listarTodos();
-                }
-                
-                // Definir las horas disponibles
+                // Cargar horas disponibles
                 List<String> horasDisponibles = Arrays.asList(
                     "08:00", "08:30", "09:00", "09:30", "10:00", "10:30", "11:00", "11:30",
                     "12:00", "12:30", "13:00", "13:30", "14:00", "14:30", "15:00", "15:30",
                     "16:00", "16:30", "17:00", "17:30", "18:00", "18:30", "19:00", "19:30"
                 );
-                
-                // Establecer la fecha mínima como hoy
-                SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
-                String fechaMinima = sdf.format(new Date());
-                
-                // Agregar los datos al request
-                request.setAttribute("cita", cita);
-                request.setAttribute("pacientes", pacientes);
-                request.setAttribute("especialidades", especialidades);
-                request.setAttribute("doctores", doctores);
-                request.setAttribute("fechaMinima", fechaMinima);
                 request.setAttribute("horasDisponibles", horasDisponibles);
                 
-                // Redirigir al formulario
                 request.getRequestDispatcher("/vistas/admin/citas/editarCita.jsp").forward(request, response);
             } else {
-                System.out.println("No se encontró la cita");
-                response.sendRedirect(request.getContextPath() + "/admin/citas/citas");
+                response.sendRedirect(request.getContextPath() + "/admin/citas");
             }
-        } catch (Exception e) {
-            System.err.println("Error al cargar el formulario de edición: " + e.getMessage());
-            e.printStackTrace();
-            request.setAttribute("error", "Error al cargar los datos: " + e.getMessage());
-            response.sendRedirect(request.getContextPath() + "/admin/citas/citas");
+        } catch (NumberFormatException e) {
+            response.sendRedirect(request.getContextPath() + "/admin/citas");
         }
     }
 
@@ -304,37 +248,32 @@ public class CitaServlet extends HttpServlet {
         response.getWriter().write(gson.toJson(pacientes));
     }
 
-    private void obtenerDoctoresPorEspecialidad(HttpServletRequest request, HttpServletResponse response) 
+    private void cargarDoctoresPorEspecialidad(HttpServletRequest request, HttpServletResponse response) 
             throws SQLException, IOException {
         response.setContentType("application/json");
         response.setCharacterEncoding("UTF-8");
         
         try {
             String especialidadIdStr = request.getParameter("especialidadId");
-            System.out.println("Especialidad ID recibido: " + especialidadIdStr);
-            
             if (especialidadIdStr == null || especialidadIdStr.trim().isEmpty()) {
-                System.out.println("Especialidad ID vacío o nulo");
                 response.getWriter().write("[]");
                 return;
             }
 
             int especialidadId = Integer.parseInt(especialidadIdStr);
-            System.out.println("Buscando doctores para especialidad ID: " + especialidadId);
+            List<Doctor> doctores = doctorDAO.listarDoctores();
             
-            List<Doctor> doctores = doctorDAO.listarPorEspecialidad(especialidadId);
-            System.out.println("Doctores encontrados: " + doctores.size());
+            // Filtrar doctores por especialidad
+            List<Doctor> doctoresFiltrados = doctores.stream()
+                .filter(d -> d.getEspecialidad() != null && d.getEspecialidad().getId() == especialidadId)
+                .collect(Collectors.toList());
             
-            String jsonResponse = gson.toJson(doctores);
-            System.out.println("Respuesta JSON: " + jsonResponse);
+            String jsonResponse = gson.toJson(doctoresFiltrados);
             response.getWriter().write(jsonResponse);
-            
         } catch (NumberFormatException e) {
-            System.err.println("Error al parsear especialidadId: " + e.getMessage());
             e.printStackTrace();
             response.getWriter().write("[]");
         } catch (Exception e) {
-            System.err.println("Error al obtener doctores: " + e.getMessage());
             e.printStackTrace();
             response.getWriter().write("[]");
         }
@@ -353,7 +292,7 @@ public class CitaServlet extends HttpServlet {
             }
 
             int id = Integer.parseInt(idStr);
-            Doctor doctor = doctorDAO.buscarPorId(id);
+            Doctor doctor = doctorDAO.obtenerDoctor(id);
             
             String jsonResponse = gson.toJson(doctor);
             response.getWriter().write(jsonResponse);
@@ -392,8 +331,25 @@ public class CitaServlet extends HttpServlet {
             return;
         }
 
+        // Validar formato de fecha
+        try {
+            SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
+            Date fechaCita = sdf.parse(fecha);
+            if (fechaCita.before(new Date())) {
+                request.setAttribute("error", "No se pueden crear citas en fechas pasadas");
+                cargarDatosFormulario(request);
+                request.getRequestDispatcher("/vistas/admin/citas/crearCita.jsp").forward(request, response);
+                return;
+            }
+        } catch (ParseException e) {
+            request.setAttribute("error", "Formato de fecha inválido");
+            cargarDatosFormulario(request);
+            request.getRequestDispatcher("/vistas/admin/citas/crearCita.jsp").forward(request, response);
+            return;
+        }
+
         // Validar que el doctor pertenezca a la especialidad seleccionada
-        Doctor doctor = doctorDAO.buscarPorId(Integer.parseInt(doctorId));
+        Doctor doctor = doctorDAO.obtenerDoctor(Integer.parseInt(doctorId));
         if (doctor == null || doctor.getEspecialidad().getId() != Integer.parseInt(especialidadId)) {
             request.setAttribute("error", "El doctor seleccionado no pertenece a la especialidad elegida");
             cargarDatosFormulario(request);
@@ -402,111 +358,48 @@ public class CitaServlet extends HttpServlet {
         }
 
         Cita cita = new Cita();
-        mapearCita(request, cita);
-        cita.setFechaCreacion(new Date());
-        
-        // Verificar disponibilidad solo si el estado no es CANCELADA
-        if (!"CANCELADA".equals(estado) && 
-            citaDAO.existeCitaEnHorario(new java.sql.Date(cita.getFecha().getTime()), cita.getHora(), cita.getDoctor().getId())) {
-            request.setAttribute("error", "El horario seleccionado no está disponible");
-            mostrarFormularioCreacion(request, response);
-            return;
+        try {
+            mapearCita(request, cita);
+            cita.setFechaCreacion(new Date());
+            
+            // Verificar disponibilidad solo si el estado no es CANCELADA
+            if (!"CANCELADA".equals(estado) && 
+                citaDAO.existeCitaEnHorario(new java.sql.Date(cita.getFecha().getTime()), cita.getHora(), cita.getDoctor().getId())) {
+                request.setAttribute("error", "El horario seleccionado no está disponible");
+                mostrarFormularioCreacion(request, response);
+                return;
+            }
+            
+            citaDAO.crear(cita);
+            
+            // Usar forward en lugar de redirect
+            request.setAttribute("mensaje", "Cita creada exitosamente");
+            listarCitas(request, response);
+        } catch (Exception e) {
+            request.setAttribute("error", "Error al crear la cita: " + e.getMessage());
+            cargarDatosFormulario(request);
+            request.getRequestDispatcher("/vistas/admin/citas/crearCita.jsp").forward(request, response);
         }
-        
-        citaDAO.crear(cita);
-        
-        // Usar forward en lugar de redirect
-        request.setAttribute("mensaje", "Cita creada exitosamente");
-        listarCitas(request, response);
     }
     
     private void actualizarCita(HttpServletRequest request, HttpServletResponse response) 
             throws SQLException, ServletException, IOException {
-        response.setContentType("application/json");
-        response.setCharacterEncoding("UTF-8");
+        int id = Integer.parseInt(request.getParameter("id"));
+        Cita cita = citaDAO.buscarPorId(id);
         
-        Map<String, Object> jsonResponse = new HashMap<>();
-        
-        try {
-            System.out.println("Parámetros recibidos:");
-            System.out.println("id: " + request.getParameter("id"));
-            System.out.println("paciente: " + request.getParameter("paciente"));
-            System.out.println("especialidad: " + request.getParameter("especialidad"));
-            System.out.println("doctor: " + request.getParameter("doctor"));
-            System.out.println("fecha: " + request.getParameter("fecha"));
-            System.out.println("hora: " + request.getParameter("hora"));
-            System.out.println("estado: " + request.getParameter("estado"));
-            
-            int id = Integer.parseInt(request.getParameter("id"));
-            String pacienteId = request.getParameter("paciente");
-            String especialidadId = request.getParameter("especialidad");
-            String doctorId = request.getParameter("doctor");
-            String fecha = request.getParameter("fecha");
-            String hora = request.getParameter("hora");
-            String estado = request.getParameter("estado");
-
-            // Validar campos requeridos
-            if (pacienteId == null || especialidadId == null || doctorId == null || 
-                fecha == null || hora == null || estado == null) {
-                jsonResponse.put("success", false);
-                jsonResponse.put("message", "Todos los campos son obligatorios");
-                response.getWriter().write(gson.toJson(jsonResponse));
-                return;
+        if (cita != null) {
+            try {
+                mapearCita(request, cita);
+                citaDAO.modificar(cita);
+                response.sendRedirect(request.getContextPath() + "/admin/citas");
+            } catch (Exception e) {
+                request.setAttribute("error", "Error al actualizar la cita: " + e.getMessage());
+                request.setAttribute("cita", cita);
+                cargarDatosFormulario(request);
+                request.getRequestDispatcher("/vistas/admin/citas/editarCita.jsp").forward(request, response);
             }
-
-            // Validar que el doctor pertenezca a la especialidad seleccionada
-            Doctor doctor = doctorDAO.buscarPorId(Integer.parseInt(doctorId));
-            if (doctor == null || doctor.getEspecialidad().getId() != Integer.parseInt(especialidadId)) {
-                jsonResponse.put("success", false);
-                jsonResponse.put("message", "El doctor seleccionado no pertenece a la especialidad elegida");
-                response.getWriter().write(gson.toJson(jsonResponse));
-                return;
-            }
-
-            Cita cita = new Cita();
-            cita.setId(id);
-            
-            // Mapear fecha y hora
-            SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
-            cita.setFecha(sdf.parse(fecha));
-            cita.setHora(hora);
-            
-            // Mapear paciente
-            Paciente paciente = new Paciente();
-            paciente.setId(Integer.parseInt(pacienteId));
-            cita.setPaciente(paciente);
-            
-            // Mapear doctor
-            cita.setDoctor(doctor);
-            
-            // Mapear estado
-            cita.setEstado(estado);
-            
-            // Verificar disponibilidad solo si el estado no es CANCELADA
-            if (!"CANCELADA".equals(estado)) {
-                Cita citaExistente = citaDAO.buscarPorId(id);
-                if (!citaExistente.getHora().equals(hora) || !citaExistente.getFecha().equals(sdf.parse(fecha))) {
-                    if (citaDAO.existeCitaEnHorario(new java.sql.Date(cita.getFecha().getTime()), 
-                        cita.getHora(), cita.getDoctor().getId())) {
-                        jsonResponse.put("success", false);
-                        jsonResponse.put("message", "El horario seleccionado no está disponible");
-                        response.getWriter().write(gson.toJson(jsonResponse));
-                        return;
-                    }
-                }
-            }
-            
-            citaDAO.modificar(cita);
-            
-            jsonResponse.put("success", true);
-            jsonResponse.put("message", "Cita actualizada exitosamente");
-            response.getWriter().write(gson.toJson(jsonResponse));
-            
-        } catch (Exception e) {
-            e.printStackTrace();
-            jsonResponse.put("success", false);
-            jsonResponse.put("message", "Error al actualizar la cita: " + e.getMessage());
-            response.getWriter().write(gson.toJson(jsonResponse));
+        } else {
+            response.sendRedirect(request.getContextPath() + "/admin/citas");
         }
     }
     
@@ -548,24 +441,41 @@ public class CitaServlet extends HttpServlet {
             // Mapear fecha y hora
             String fechaStr = request.getParameter("fecha");
             String horaStr = request.getParameter("hora");
+            
+            if (fechaStr == null || horaStr == null) {
+                throw new IllegalArgumentException("La fecha y hora son requeridas");
+            }
+            
             SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
-            cita.setFecha(sdf.parse(fechaStr));
+            cita.setFecha(new java.sql.Date(sdf.parse(fechaStr).getTime()));
             cita.setHora(horaStr);
             
             // Mapear paciente
-            int pacienteId = Integer.parseInt(request.getParameter("paciente"));
+            String pacienteIdStr = request.getParameter("pacienteId");
+            if (pacienteIdStr == null) {
+                throw new IllegalArgumentException("El ID del paciente es requerido");
+            }
+            int pacienteId = Integer.parseInt(pacienteIdStr);
             Paciente paciente = new Paciente();
             paciente.setId(pacienteId);
             cita.setPaciente(paciente);
             
             // Mapear doctor
-            int doctorId = Integer.parseInt(request.getParameter("doctor"));
+            String doctorIdStr = request.getParameter("doctorId");
+            if (doctorIdStr == null) {
+                throw new IllegalArgumentException("El ID del doctor es requerido");
+            }
+            int doctorId = Integer.parseInt(doctorIdStr);
             Doctor doctor = new Doctor();
             doctor.setId(doctorId);
             cita.setDoctor(doctor);
             
             // Mapear estado
-            cita.setEstado(request.getParameter("estado"));
+            String estado = request.getParameter("estado");
+            if (estado == null) {
+                throw new IllegalArgumentException("El estado es requerido");
+            }
+            cita.setEstado(estado);
             
             // Mapear motivo de cancelación si existe
             String motivoCancelacion = request.getParameter("motivoCancelacion");
@@ -573,29 +483,23 @@ public class CitaServlet extends HttpServlet {
                 cita.setMotivoCancelacion(motivoCancelacion);
             }
         } catch (ParseException e) {
-            e.printStackTrace();
+            throw new RuntimeException("Error al procesar la fecha: " + e.getMessage());
+        } catch (NumberFormatException e) {
+            throw new RuntimeException("Error al procesar los IDs: " + e.getMessage());
         }
     }
 
     private void cargarDatosFormulario(HttpServletRequest request) throws SQLException {
-        List<Paciente> pacientes = pacienteDAO.listarTodos();
-        List<Doctor> doctores = doctorDAO.listarTodos();
+        // Cargar especialidades
         List<Especialidad> especialidades = especialidadDAO.listarTodas();
-        
-        // Definir las horas disponibles
-        List<String> horasDisponibles = Arrays.asList(
-            "08:00", "08:30", "09:00", "09:30", "10:00", "10:30", "11:00", "11:30",
-            "12:00", "12:30", "13:00", "13:30", "14:00", "14:30", "15:00", "15:30",
-            "16:00", "16:30", "17:00", "17:30", "18:00", "18:30", "19:00", "19:30"
-        );
-        
-        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
-        String fechaMinima = sdf.format(new Date());
-        
-        request.setAttribute("pacientes", pacientes);
-        request.setAttribute("doctores", doctores);
         request.setAttribute("especialidades", especialidades);
-        request.setAttribute("fechaMinima", fechaMinima);
-        request.setAttribute("horasDisponibles", horasDisponibles);
+        
+        // Cargar doctores
+        List<Doctor> doctores = doctorDAO.listarDoctores();
+        request.setAttribute("doctores", doctores);
+        
+        // Cargar pacientes
+        List<Paciente> pacientes = pacienteDAO.listarTodos();
+        request.setAttribute("pacientes", pacientes);
     }
 } 
