@@ -173,7 +173,7 @@
                 <!-- Formulario -->
                 <div class="card">
                     <div class="card-body">
-                        <form action="${pageContext.request.contextPath}/admin/paciente/pacientes/guardar" method="POST" class="needs-validation" novalidate>
+                        <form action="${pageContext.request.contextPath}/admin/paciente/crear" method="POST" class="needs-validation" novalidate>
                             <div class="row">
                                 <div class="col-md-6 mb-3">
                                     <label for="nombres" class="form-label required-field"><fmt:message key="form.fields.names"/></label>

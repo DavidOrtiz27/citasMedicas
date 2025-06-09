@@ -1,6 +1,7 @@
 package com.gestorcitas.controlador;
 
 import java.io.IOException;
+import java.sql.SQLException;
 
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
@@ -24,7 +25,14 @@ public class LoginServlet extends HttpServlet {
     }
 
     @Override
-    protected void doPost(HttpServletRequest request, HttpServletResponse response)
+    protected void doGet(HttpServletRequest request, HttpServletResponse response) 
+            throws ServletException, IOException {
+        // Redirigir al formulario de login
+        request.getRequestDispatcher("/vistas/login.jsp").forward(request, response);
+    }
+    
+    @Override
+    protected void doPost(HttpServletRequest request, HttpServletResponse response) 
             throws ServletException, IOException {
         String username = request.getParameter("username");
         String password = request.getParameter("password");
@@ -41,30 +49,22 @@ public class LoginServlet extends HttpServlet {
                     case "admin":
                         response.sendRedirect(request.getContextPath() + "/admin/inicio");
                         break;
+                    case "doctor":
+                        response.sendRedirect(request.getContextPath() + "/medico/inicio");
+                        break;
                     case "recepcionista":
                         response.sendRedirect(request.getContextPath() + "/recepcionista/inicio");
                         break;
-                    case "doctor":
-                        response.sendRedirect(request.getContextPath() + "/doctor/inicio");
-                        break;
                     default:
-                        response.sendRedirect(request.getContextPath() + "/publico/inicio");
+                        response.sendRedirect(request.getContextPath() + "/vistas/login.jsp?error=rol_invalido");
                 }
             } else {
-                request.setAttribute("error", "Usuario o contraseña incorrectos");
-                request.getRequestDispatcher("/vistas/login.jsp").forward(request, response);
+                response.sendRedirect(request.getContextPath() + "/vistas/login.jsp?error=credenciales_invalidas");
             }
-        } catch (Exception e) {
+        } catch (SQLException e) {
             e.printStackTrace();
-            request.setAttribute("error", "Error al iniciar sesión");
-            request.getRequestDispatcher("/vistas/login.jsp").forward(request, response);
+            response.sendRedirect(request.getContextPath() + "/vistas/login.jsp?error=error_sistema");
         }
-    }
-
-    @Override
-    protected void doGet(HttpServletRequest request, HttpServletResponse response)
-            throws ServletException, IOException {
-        request.getRequestDispatcher("/vistas/login.jsp").forward(request, response);
     }
 
 }

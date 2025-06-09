@@ -95,7 +95,7 @@ public class PacienteDAO {
         return null;
     }
 
-    public void agregarPaciente(Paciente paciente) throws SQLException {
+    public boolean agregarPaciente(Paciente paciente) throws SQLException {
         String sql = "INSERT INTO pacientes (dni, nombres, apellidos, fecha_nacimiento, genero, direccion, telefono, email) " +
                     "VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
         
@@ -118,17 +118,21 @@ public class PacienteDAO {
             stmt.setString(7, paciente.getTelefono());
             stmt.setString(8, paciente.getEmail());
             
-            stmt.executeUpdate();
+            int filasAfectadas = stmt.executeUpdate();
             
-            try (ResultSet generatedKeys = stmt.getGeneratedKeys()) {
-                if (generatedKeys.next()) {
-                    paciente.setId(generatedKeys.getInt(1));
+            if (filasAfectadas > 0) {
+                try (ResultSet generatedKeys = stmt.getGeneratedKeys()) {
+                    if (generatedKeys.next()) {
+                        paciente.setId(generatedKeys.getInt(1));
+                        return true;
+                    }
                 }
             }
+            return false;
         }
     }
 
-    public void actualizarPaciente(Paciente paciente) throws SQLException {
+    public boolean actualizarPaciente(Paciente paciente) throws SQLException {
         String sql = "UPDATE pacientes SET dni = ?, nombres = ?, apellidos = ?, " +
                     "fecha_nacimiento = ?, genero = ?, direccion = ?, telefono = ?, email = ? " +
                     "WHERE id = ?";
@@ -153,59 +157,44 @@ public class PacienteDAO {
             stmt.setString(8, paciente.getEmail());
             stmt.setInt(9, paciente.getId());
             
-            stmt.executeUpdate();
+            int filasAfectadas = stmt.executeUpdate();
+            return filasAfectadas > 0;
         }
     }
 
     public boolean eliminarPaciente(int id) throws SQLException {
-        Connection conn = null;
-        try {
-            conn = DatabaseUtil.getConnection();
+        String sql = "DELETE FROM pacientes WHERE id = ?";
+        
+        try (Connection conn = DatabaseUtil.getConnection()) {
             conn.setAutoCommit(false); // Iniciar transacción
             
-            // Primero eliminar las citas asociadas
-            eliminarCitasPaciente(conn, id);
-            
-            // Luego eliminar el paciente
-            String sql = "DELETE FROM pacientes WHERE id = ?";
-            try (PreparedStatement stmt = conn.prepareStatement(sql)) {
-                stmt.setInt(1, id);
-                int filasAfectadas = stmt.executeUpdate();
+            try {
+                // Primero eliminar las citas asociadas
+                String sqlCitas = "DELETE FROM citas WHERE paciente_id = ?";
+                try (PreparedStatement stmtCitas = conn.prepareStatement(sqlCitas)) {
+                    stmtCitas.setInt(1, id);
+                    stmtCitas.executeUpdate();
+                }
                 
-                if (filasAfectadas > 0) {
-                    conn.commit(); // Confirmar transacción
-                    return true;
-                } else {
-                    conn.rollback(); // Revertir transacción
-                    return false;
+                // Luego eliminar el paciente
+                try (PreparedStatement stmt = conn.prepareStatement(sql)) {
+                    stmt.setInt(1, id);
+                    int filasAfectadas = stmt.executeUpdate();
+                    
+                    if (filasAfectadas > 0) {
+                        conn.commit(); // Confirmar transacción
+                        return true;
+                    } else {
+                        conn.rollback(); // Revertir transacción
+                        return false;
+                    }
                 }
+            } catch (SQLException e) {
+                conn.rollback(); // Revertir transacción en caso de error
+                throw e;
+            } finally {
+                conn.setAutoCommit(true); // Restaurar autocommit
             }
-        } catch (SQLException e) {
-            if (conn != null) {
-                try {
-                    conn.rollback(); // Revertir transacción en caso de error
-                } catch (SQLException ex) {
-                    ex.printStackTrace();
-                }
-            }
-            throw e;
-        } finally {
-            if (conn != null) {
-                try {
-                    conn.setAutoCommit(true); // Restaurar autocommit
-                    conn.close();
-                } catch (SQLException e) {
-                    e.printStackTrace();
-                }
-            }
-        }
-    }
-
-    private void eliminarCitasPaciente(Connection conn, int pacienteId) throws SQLException {
-        String sql = "DELETE FROM citas WHERE paciente_id = ?";
-        try (PreparedStatement stmt = conn.prepareStatement(sql)) {
-            stmt.setInt(1, pacienteId);
-            stmt.executeUpdate();
         }
     }
 
@@ -260,13 +249,74 @@ public class PacienteDAO {
     
     public int contarTotal() throws SQLException {
         String sql = "SELECT COUNT(*) FROM pacientes";
-        try (Connection conn = DatabaseUtil.getConnection();
-             PreparedStatement stmt = conn.prepareStatement(sql);
-             ResultSet rs = stmt.executeQuery()) {
-            if (rs.next()) {
-                return rs.getInt(1);
+        Connection conn = null;
+        try {
+            conn = DatabaseUtil.getConnection();
+            try (PreparedStatement stmt = conn.prepareStatement(sql);
+                 ResultSet rs = stmt.executeQuery()) {
+                if (rs.next()) {
+                    return rs.getInt(1);
+                }
+            }
+        } finally {
+            if (conn != null) {
+                DatabaseUtil.releaseConnection(conn);
             }
         }
         return 0;
+    }
+
+    public List<Paciente> listarTodos() throws SQLException {
+        List<Paciente> pacientes = new ArrayList<>();
+        String sql = "SELECT * FROM pacientes ORDER BY apellidos, nombres";
+        
+        try (Connection conn = DatabaseUtil.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql);
+             ResultSet rs = stmt.executeQuery()) {
+            
+            while (rs.next()) {
+                Paciente paciente = new Paciente();
+                paciente.setId(rs.getInt("id"));
+                paciente.setNombres(rs.getString("nombres"));
+                paciente.setApellidos(rs.getString("apellidos"));
+                paciente.setDni(rs.getString("dni"));
+                paciente.setTelefono(rs.getString("telefono"));
+                paciente.setEmail(rs.getString("email"));
+                pacientes.add(paciente);
+            }
+        }
+        
+        return pacientes;
+    }
+
+    public List<Paciente> buscarPorTermino(String termino) throws SQLException {
+        List<Paciente> pacientes = new ArrayList<>();
+        String sql = "SELECT * FROM pacientes WHERE dni LIKE ? OR nombres LIKE ? OR apellidos LIKE ?";
+        
+        try (Connection conn = DatabaseUtil.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+            
+            String terminoBusqueda = "%" + termino + "%";
+            stmt.setString(1, terminoBusqueda);
+            stmt.setString(2, terminoBusqueda);
+            stmt.setString(3, terminoBusqueda);
+            
+            try (ResultSet rs = stmt.executeQuery()) {
+                while (rs.next()) {
+                    Paciente paciente = new Paciente();
+                    paciente.setId(rs.getInt("id"));
+                    paciente.setDni(rs.getString("dni"));
+                    paciente.setNombres(rs.getString("nombres"));
+                    paciente.setApellidos(rs.getString("apellidos"));
+                    paciente.setFechaNacimiento(rs.getDate("fecha_nacimiento"));
+                    paciente.setGenero(rs.getString("genero"));
+                    paciente.setDireccion(rs.getString("direccion"));
+                    paciente.setTelefono(rs.getString("telefono"));
+                    paciente.setEmail(rs.getString("email"));
+                    pacientes.add(paciente);
+                }
+            }
+        }
+        return pacientes;
     }
 } 

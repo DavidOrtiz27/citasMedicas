@@ -1,5 +1,4 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
-<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
 
 <fmt:setLocale value="${param.lang != null ? param.lang : 'es'}" />
@@ -213,6 +212,29 @@
             margin-bottom: 0;
             font-size: 0.9rem;
         }
+
+        .captcha-container {
+            background-color: var(--light-color);
+            border-radius: 0.5rem;
+            padding: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .captcha-image {
+            border-radius: 0.5rem;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+
+        .captcha-image:hover {
+            transform: scale(1.02);
+        }
+
+        .alert {
+            border-radius: 0.5rem;
+            margin-bottom: 1rem;
+        }
     </style>
 </head>
 <body>
@@ -253,7 +275,7 @@
             <h1> <fmt:message key="index.header" /></h1>
             <p class="lead"> <fmt:message key="index.lead" /></p>
             <div class="d-flex justify-content-center gap-4">
-                <a href="${pageContext.request.contextPath}/vistas/publico/solicitarCita.jsp" 
+                <a href="${pageContext.request.contextPath}/publico/solicitar" 
                    class="btn btn-primary btn-hero">
                     <i class="bi bi-calendar-plus"></i> <fmt:message key="index.make" />
                 </a>
@@ -304,6 +326,82 @@
         </div>
     </section>
 
+    <!-- Modal Consultar Citas -->
+    <div class="modal fade" id="consultarModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Consultar Citas</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="consultarForm">
+                        <div class="mb-3">
+                            <label for="documentoConsulta" class="form-label">Documento de Identidad</label>
+                            <input type="text" class="form-control" id="documentoConsulta" required>
+                        </div>
+                        <div class="captcha-container">
+                            <img src="${pageContext.request.contextPath}/captcha" 
+                                 class="captcha-image mb-3" 
+                                 alt="CAPTCHA"
+                                 onclick="this.src='${pageContext.request.contextPath}/captcha?' + Math.random()">
+                            <div class="mb-3">
+                                <input type="text" class="form-control" id="captchaConsulta" 
+                                       placeholder="Ingrese el código CAPTCHA" required>
+                            </div>
+                            <small class="text-muted">Haga clic en la imagen para actualizar el código</small>
+                        </div>
+                    </form>
+                    <div id="resultadoConsulta" class="mt-3"></div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+                    <button type="button" class="btn btn-primary" onclick="consultarCitas()">Consultar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Cancelar Citas -->
+    <div class="modal fade" id="cancelarModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Cancelar Cita</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="cancelarForm">
+                        <div class="mb-3">
+                            <label for="documentoCancelar" class="form-label">Documento de Identidad</label>
+                            <input type="text" class="form-control" id="documentoCancelar" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="citaId" class="form-label">ID de la Cita</label>
+                            <input type="number" class="form-control" id="citaId" required>
+                        </div>
+                        <div class="captcha-container">
+                            <img src="${pageContext.request.contextPath}/captcha" 
+                                 class="captcha-image mb-3" 
+                                 alt="CAPTCHA"
+                                 onclick="this.src='${pageContext.request.contextPath}/captcha?' + Math.random()">
+                            <div class="mb-3">
+                                <input type="text" class="form-control" id="captchaCancelar" 
+                                       placeholder="Ingrese el código CAPTCHA" required>
+                            </div>
+                            <small class="text-muted">Haga clic en la imagen para actualizar el código</small>
+                        </div>
+                    </form>
+                    <div id="resultadoCancelar" class="mt-3"></div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+                    <button type="button" class="btn btn-danger" onclick="cancelarCita()">Cancelar Cita</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- Pie de página -->
     <footer>
         <div class="container">
@@ -332,5 +430,61 @@
     </footer>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        function consultarCitas() {
+            const documento = document.getElementById('documentoConsulta').value;
+            const captcha = document.getElementById('captchaConsulta').value;
+            
+            fetch('${pageContext.request.contextPath}/publico/consultar?documento=' + documento + '&captcha=' + captcha)
+                .then(response => response.json())
+                .then(data => {
+                    const resultado = document.getElementById('resultadoConsulta');
+                    if (data.error) {
+                        resultado.innerHTML = '<div class="alert alert-danger">' + data.error + '</div>';
+                    } else {
+                        let html = '<div class="table-responsive"><table class="table">';
+                        html += '<thead><tr><th>Fecha</th><th>Hora</th><th>Doctor</th><th>Estado</th></tr></thead>';
+                        html += '<tbody>';
+                        data.forEach(cita => {
+                            html += '<tr>';
+                            html += '<td>' + new Date(cita.fecha).toLocaleDateString() + '</td>';
+                            html += '<td>' + new Date(cita.fecha).toLocaleTimeString() + '</td>';
+                            html += '<td>' + cita.doctor.nombres + ' ' + cita.doctor.apellidos + '</td>';
+                            html += '<td>' + cita.estado + '</td>';
+                            html += '</tr>';
+                        });
+                        html += '</tbody></table></div>';
+                        resultado.innerHTML = html;
+                    }
+                })
+                .catch(error => {
+                    document.getElementById('resultadoConsulta').innerHTML = 
+                        '<div class="alert alert-danger">Error al consultar las citas</div>';
+                });
+        }
+
+        function cancelarCita() {
+            const documento = document.getElementById('documentoCancelar').value;
+            const citaId = document.getElementById('citaId').value;
+            const captcha = document.getElementById('captchaCancelar').value;
+            
+            fetch('${pageContext.request.contextPath}/publico/cancelar?documento=' + documento + 
+                  '&citaId=' + citaId + '&captcha=' + captcha)
+                .then(response => response.json())
+                .then(data => {
+                    const resultado = document.getElementById('resultadoCancelar');
+                    if (data.error) {
+                        resultado.innerHTML = '<div class="alert alert-danger">' + data.error + '</div>';
+                    } else {
+                        resultado.innerHTML = '<div class="alert alert-success">' + data.message + '</div>';
+                        document.getElementById('cancelarForm').reset();
+                    }
+                })
+                .catch(error => {
+                    document.getElementById('resultadoCancelar').innerHTML = 
+                        '<div class="alert alert-danger">Error al cancelar la cita</div>';
+                });
+        }
+    </script>
 </body>
 </html>

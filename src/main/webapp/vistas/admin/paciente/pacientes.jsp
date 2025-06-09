@@ -309,7 +309,60 @@
         </div>
     </div>
 
-    <!-- Bootstrap JS -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<!-- Scripts -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script>
+function confirmarEliminacion(id) {
+    Swal.fire({
+        title: '¿Estás seguro?',
+        text: "Esta acción no se puede deshacer",
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#d33',
+        cancelButtonColor: '#3085d6',
+        confirmButtonText: 'Sí, eliminar',
+        cancelButtonText: 'Cancelar'
+    }).then((result) => {
+        if (result.isConfirmed) {
+            eliminarPaciente(id);
+        }
+    });
+}
+
+function eliminarPaciente(id) {
+    fetch('${pageContext.request.contextPath}/admin/paciente/eliminar/' + id, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            Swal.fire({
+                title: '¡Eliminado!',
+                text: data.message,
+                icon: 'success'
+            }).then(() => {
+                window.location.reload();
+            });
+        } else {
+            Swal.fire({
+                title: 'Error',
+                text: data.message,
+                icon: 'error'
+            });
+        }
+    })
+    .catch(error => {
+        Swal.fire({
+            title: 'Error',
+            text: 'Ocurrió un error al eliminar el paciente',
+            icon: 'error'
+        });
+    });
+}
+</script>
 </body>
 </html>

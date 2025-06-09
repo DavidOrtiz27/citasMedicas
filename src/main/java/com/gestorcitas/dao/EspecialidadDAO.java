@@ -78,13 +78,38 @@ public class EspecialidadDAO {
     }
     
     public void eliminar(int id) throws SQLException {
-        String sql = "DELETE FROM especialidades WHERE id = ?";
-        
-        try (Connection conn = DatabaseUtil.getConnection();
-             PreparedStatement stmt = conn.prepareStatement(sql)) {
+        try (Connection conn = DatabaseUtil.getConnection()) {
+            conn.setAutoCommit(false); // Iniciar transacción
             
-            stmt.setInt(1, id);
-            stmt.executeUpdate();
+            try {
+                // Primero eliminar las citas asociadas a médicos de esta especialidad
+                String sqlCitas = "DELETE FROM citas WHERE medico_id IN (SELECT id FROM medicos WHERE especialidad_id = ?)";
+                try (PreparedStatement stmtCitas = conn.prepareStatement(sqlCitas)) {
+                    stmtCitas.setInt(1, id);
+                    stmtCitas.executeUpdate();
+                }
+                
+                // Luego eliminar los médicos asociados
+                String sqlMedicos = "DELETE FROM medicos WHERE especialidad_id = ?";
+                try (PreparedStatement stmtMedicos = conn.prepareStatement(sqlMedicos)) {
+                    stmtMedicos.setInt(1, id);
+                    stmtMedicos.executeUpdate();
+                }
+                
+                // Finalmente eliminar la especialidad
+                String sql = "DELETE FROM especialidades WHERE id = ?";
+                try (PreparedStatement stmt = conn.prepareStatement(sql)) {
+                    stmt.setInt(1, id);
+                    stmt.executeUpdate();
+                }
+                
+                conn.commit(); // Confirmar transacción
+            } catch (SQLException e) {
+                conn.rollback(); // Revertir transacción en caso de error
+                throw e;
+            } finally {
+                conn.setAutoCommit(true); // Restaurar autocommit
+            }
         }
     }
     
