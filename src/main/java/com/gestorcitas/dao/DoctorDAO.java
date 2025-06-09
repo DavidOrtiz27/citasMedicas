@@ -10,6 +10,7 @@ import java.util.List;
 
 import com.gestorcitas.modelo.Doctor;
 import com.gestorcitas.modelo.Especialidad;
+import com.gestorcitas.modelo.Paciente;
 import com.gestorcitas.util.DatabaseUtil;
 
 public class DoctorDAO {
@@ -23,74 +24,6 @@ public class DoctorDAO {
         }
     }
 
-    public List<Doctor> listarTodos() throws SQLException {
-        List<Doctor> doctores = new ArrayList<>();
-        String sql = "SELECT d.*, e.id as especialidad_id, e.nombre as especialidad_nombre, e.descripcion as especialidad_descripcion " +
-                    "FROM medicos d " +
-                    "LEFT JOIN especialidades e ON d.especialidad_id = e.id " +
-                    "ORDER BY d.apellidos, d.nombres";
-        
-        try (Connection conn = DatabaseUtil.getConnection();
-             Statement stmt = conn.createStatement();
-             ResultSet rs = stmt.executeQuery(sql)) {
-            
-            while (rs.next()) {
-                Doctor doctor = new Doctor();
-                doctor.setId(rs.getInt("id"));
-                doctor.setNombres(rs.getString("nombres"));
-                doctor.setApellidos(rs.getString("apellidos"));
-                
-                Especialidad especialidad = new Especialidad();
-                especialidad.setId(rs.getInt("especialidad_id"));
-                especialidad.setNombre(rs.getString("especialidad_nombre"));
-                especialidad.setDescripcion(rs.getString("especialidad_descripcion"));
-                doctor.setEspecialidad(especialidad);
-                
-                doctor.setEmail(rs.getString("email"));
-                doctor.setTelefono(rs.getString("telefono"));
-                doctores.add(doctor);
-            }
-        }
-        return doctores;
-    }
-    
-    public boolean guardar(Doctor doctor) throws SQLException {
-        String sql;
-        if (doctor.getId() == 0) {
-            sql = "INSERT INTO doctores (nombres, apellidos, especialidad_id, email, telefono) " +
-                  "VALUES (?, ?, ?, ?, ?)";
-        } else {
-            sql = "UPDATE doctores SET nombres = ?, apellidos = ?, " +
-                  "especialidad_id = ?, email = ?, telefono = ? WHERE id = ?";
-        }
-        
-        try (Connection conn = DatabaseUtil.getConnection();
-             PreparedStatement stmt = conn.prepareStatement(sql)) {
-            
-            stmt.setString(1, doctor.getNombres());
-            stmt.setString(2, doctor.getApellidos());
-            stmt.setInt(3, doctor.getEspecialidad().getId());
-            stmt.setString(4, doctor.getEmail());
-            stmt.setString(5, doctor.getTelefono());
-            
-            if (doctor.getId() != 0) {
-                stmt.setInt(6, doctor.getId());
-            }
-            
-            return stmt.executeUpdate() > 0;
-        }
-    }
-    
-    public boolean eliminar(int id) throws SQLException {
-        String sql = "DELETE FROM doctores WHERE id = ?";
-        
-        try (Connection conn = DatabaseUtil.getConnection();
-             PreparedStatement stmt = conn.prepareStatement(sql)) {
-            
-            stmt.setInt(1, id);
-            return stmt.executeUpdate() > 0;
-        }
-    }
     
     public int contarTotal() throws SQLException {
         String sql = "SELECT COUNT(*) FROM doctores";
@@ -310,17 +243,5 @@ public class DoctorDAO {
             stmt.setInt(7, doctor.getId());
             stmt.executeUpdate();
         }
-    }
-
-
-
-    //TODO agregar funcionalidad, de momento se agrego el metodo solo para compilar la aplicacion
-    public Doctor buscarPorId(int id){
-        throw new UnsupportedOperationException("Unimplemented method 'buscarPorId' for class DoctorDAO");
-    }
-
-    //TODO agregar funcionalidad, de momento se agrego el metodo solo para compilar la aplicacion
-    public List<Doctor> listarPorEspecialidad(int id) {
-        throw new UnsupportedOperationException("Unimplemented method 'listarPorEspecialidad' for class DoctorDAO");
     }
 }

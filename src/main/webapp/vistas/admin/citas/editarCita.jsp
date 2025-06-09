@@ -7,7 +7,6 @@
     <title>Editar Cita - Sistema de Citas Médicas</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.7.2/font/bootstrap-icons.css" rel="stylesheet">
-    <link href="https://cdn.jsdelivr.net/npm/sweetalert2@11.7.32/dist/sweetalert2.min.css" rel="stylesheet">
     <style>
         :root {
             --primary-color: #2c3e50;
@@ -103,59 +102,7 @@
     <div class="container-fluid">
         <div class="row">
             <!-- Sidebar -->
-            <nav class="col-md-3 col-lg-2 d-md-block sidebar">
-                <div class="position-sticky">
-                    <div class="text-center py-4">
-                        <h4 class="text-white">Sistema de Citas</h4>
-                        <p class="text-light opacity-75">Panel de Administración</p>
-                    </div>
-                    
-                    <ul class="nav flex-column px-3">
-                        <li class="nav-item">
-                            <a class="nav-link" href="${pageContext.request.contextPath}/admin/inicio">
-                                <i class="bi bi-house"></i>
-                                Inicio
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" href="${pageContext.request.contextPath}/admin/paciente/pacientes">
-                                <i class="bi bi-people"></i>
-                                Pacientes
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" href="${pageContext.request.contextPath}/admin/doctor/doctores">
-                                <i class="bi bi-person-badge"></i>
-                                Doctores
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link active" href="${pageContext.request.contextPath}/admin/citas/citas">
-                                <i class="bi bi-calendar-check"></i>
-                                Citas
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" href="${pageContext.request.contextPath}/admin/especialidad/especialidades">
-                                <i class="bi bi-list-check"></i>
-                                Especialidades
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" href="${pageContext.request.contextPath}/admin/horario/horarios">
-                                <i class="bi bi-clock"></i>
-                                Horarios
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" href="${pageContext.request.contextPath}/admin/usuario/usuarios">
-                                <i class="bi bi-person-gear"></i>
-                                Usuarios
-                            </a>
-                        </li>
-                    </ul>
-                </div>
-            </nav>
+            <%@ include file="../../../includes/sitebarAdmin.jsp" %>
 
             <!-- Contenido principal -->
             <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4 py-4">
@@ -168,7 +115,7 @@
                 <!-- Formulario de edición -->
                 <div class="card">
                     <div class="card-body">
-                        <form id="formEditarCita">
+                        <form action="${pageContext.request.contextPath}/admin/citas/citas" method="post" class="needs-validation" novalidate>
                             <input type="hidden" name="accion" value="actualizar">
                             <input type="hidden" name="id" value="${cita.id}">
                             
@@ -183,60 +130,54 @@
                                             </option>
                                         </c:forEach>
                                     </select>
+                                    <div class="invalid-feedback">
+                                        Por favor seleccione un paciente.
+                                    </div>
                                 </div>
                                 
-                                <div class="col-md-6 mb-3">
-                                    <label for="especialidad" class="form-label required-field">Especialidad</label>
-                                    <select class="form-select" id="especialidad" name="especialidad" required>
-                                        <option value="">Seleccione una especialidad</option>
-                                        <c:forEach items="${especialidades}" var="especialidad">
-                                            <option value="${especialidad.id}" ${cita.doctor.especialidad.id == especialidad.id ? 'selected' : ''}>
-                                                ${especialidad.nombre}
-                                            </option>
-                                        </c:forEach>
-                                    </select>
-                                </div>
-                            </div>
-                            
-                            <div class="row">
                                 <div class="col-md-6 mb-3">
                                     <label for="doctor" class="form-label required-field">Doctor</label>
                                     <select class="form-select" id="doctor" name="doctor" required>
                                         <option value="">Seleccione un doctor</option>
                                         <c:forEach items="${doctores}" var="doctor">
                                             <option value="${doctor.id}" ${cita.doctor.id == doctor.id ? 'selected' : ''}>
-                                                ${doctor.nombres} ${doctor.apellidos}
+                                                ${doctor.nombres} ${doctor.apellidos} - ${doctor.especialidad.nombre}
                                             </option>
                                         </c:forEach>
                                     </select>
-                                </div>
-                                
-                                <div class="col-md-6 mb-3">
-                                    <label for="estado" class="form-label required-field">Estado</label>
-                                    <select class="form-select" id="estado" name="estado" required>
-                                        <option value="PENDIENTE" ${cita.estado == 'PENDIENTE' ? 'selected' : ''}>Pendiente</option>
-                                        <option value="CONFIRMADA" ${cita.estado == 'CONFIRMADA' ? 'selected' : ''}>Confirmada</option>
-                                        <option value="CANCELADA" ${cita.estado == 'CANCELADA' ? 'selected' : ''}>Cancelada</option>
-                                        <option value="COMPLETADA" ${cita.estado == 'COMPLETADA' ? 'selected' : ''}>Completada</option>
-                                    </select>
+                                    <div class="invalid-feedback">
+                                        Por favor seleccione un doctor.
+                                    </div>
                                 </div>
                             </div>
                             
                             <div class="row">
                                 <div class="col-md-6 mb-3">
                                     <label for="fecha" class="form-label required-field">Fecha</label>
-                                    <input type="date" class="form-control" id="fecha" name="fecha" 
-                                           value="<fmt:formatDate value="${cita.fecha}" pattern="yyyy-MM-dd"/>" required>
+                                    <input type="date" class="form-control" id="fecha" name="fecha" value="${cita.fecha}" required>
+                                    <div class="invalid-feedback">
+                                        Por favor seleccione una fecha.
+                                    </div>
                                 </div>
                                 
                                 <div class="col-md-6 mb-3">
                                     <label for="hora" class="form-label required-field">Hora</label>
-                                    <select class="form-select" id="hora" name="hora" required>
-                                        <option value="">Seleccione una hora</option>
-                                        <c:forEach items="${horasDisponibles}" var="hora">
-                                            <option value="${hora}" ${cita.hora == hora ? 'selected' : ''}>${hora}</option>
-                                        </c:forEach>
-                                    </select>
+                                    <input type="time" class="form-control" id="hora" name="hora" value="${cita.hora}" required>
+                                    <div class="invalid-feedback">
+                                        Por favor seleccione una hora.
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="estado" class="form-label required-field">Estado</label>
+                                <select class="form-select" id="estado" name="estado" required>
+                                    <option value="PENDIENTE" ${cita.estado == 'PENDIENTE' ? 'selected' : ''}>Pendiente</option>
+                                    <option value="CONFIRMADA" ${cita.estado == 'CONFIRMADA' ? 'selected' : ''}>Confirmada</option>
+                                    <option value="CANCELADA" ${cita.estado == 'CANCELADA' ? 'selected' : ''}>Cancelada</option>
+                                </select>
+                                <div class="invalid-feedback">
+                                    Por favor seleccione un estado.
                                 </div>
                             </div>
                             
@@ -256,197 +197,9 @@
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.7.32/dist/sweetalert2.all.min.js"></script>
     <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            const form = document.getElementById('formEditarCita');
-            const especialidadSelect = document.getElementById('especialidad');
-            const doctorSelect = document.getElementById('doctor');
-            const fechaInput = document.getElementById('fecha');
-            const horaSelect = document.getElementById('hora');
-            const estadoSelect = document.getElementById('estado');
-            
-            // Establecer fecha mínima como hoy
-            const hoy = new Date().toISOString().split('T')[0];
-            fechaInput.min = hoy;
-            
-            // Guardar el ID del doctor actual
-            const doctorIdActual = '${cita.doctor.id}';
-            console.log('ID del doctor actual:', doctorIdActual);
-            
-            // Función para cargar doctores por especialidad
-            async function cargarDoctores(especialidadId) {
-                try {
-                    console.log('Cargando doctores para especialidad:', especialidadId);
-                    doctorSelect.innerHTML = '<option value="">Seleccione un doctor</option>';
-                    
-                    if (!especialidadId) {
-                        console.log('No hay especialidad seleccionada');
-                        return;
-                    }
-                    
-                    const url = '/citasMedicas_war_exploded/admin/citas/doctoresPorEspecialidad?especialidadId=' + especialidadId;
-                    console.log('URL de la petición:', url);
-                    
-                    const response = await fetch(url, {
-                        headers: {
-                            'Accept': 'application/json'
-                        }
-                    });
-                    
-                    if (!response.ok) {
-                        throw new Error('Error al cargar doctores: ' + response.status);
-                    }
-                    
-                    const contentType = response.headers.get('content-type');
-                    if (!contentType || !contentType.includes('application/json')) {
-                        throw new Error('La respuesta no es JSON válido');
-                    }
-                    
-                    const doctores = await response.json();
-                    console.log('Doctores recibidos:', doctores);
-                    
-                    if (doctores && doctores.length > 0) {
-                        doctores.forEach(doctor => {
-                            const option = document.createElement('option');
-                            option.value = doctor.id;
-                            option.textContent = doctor.nombres + ' ' + doctor.apellidos;
-                            if (doctor.id === parseInt(doctorIdActual)) {
-                                option.selected = true;
-                            }
-                            doctorSelect.appendChild(option);
-                        });
-                    } else {
-                        console.log('No se encontraron doctores para esta especialidad');
-                        // Si no hay doctores en la lista pero tenemos un doctor actual, intentar cargarlo
-                        if (doctorIdActual) {
-                            const doctorResponse = await fetch('/citasMedicas_war_exploded/admin/doctor/buscar?id=' + doctorIdActual, {
-                                headers: {
-                                    'Accept': 'application/json'
-                                }
-                            });
-                            
-                            if (doctorResponse.ok) {
-                                const contentType = doctorResponse.headers.get('content-type');
-                                if (contentType && contentType.includes('application/json')) {
-                                    const doctor = await doctorResponse.json();
-                                    if (doctor) {
-                                        const option = document.createElement('option');
-                                        option.value = doctor.id;
-                                        option.textContent = doctor.nombres + ' ' + doctor.apellidos;
-                                        option.selected = true;
-                                        doctorSelect.appendChild(option);
-                                    }
-                                }
-                            }
-                        }
-                    }
-                } catch (error) {
-                    console.error('Error al cargar doctores:', error);
-                    Swal.fire({
-                        icon: 'error',
-                        title: 'Error',
-                        text: 'No se pudieron cargar los doctores: ' + error.message
-                    });
-                }
-            }
-            
-            // Cargar doctores cuando cambie la especialidad
-            especialidadSelect.addEventListener('change', function() {
-                console.log('Cambio de especialidad detectado:', this.value);
-                cargarDoctores(this.value);
-            });
-            
-            // Cargar doctores inicialmente si hay una especialidad seleccionada
-            if (especialidadSelect.value) {
-                console.log('Cargando doctores iniciales para especialidad:', especialidadSelect.value);
-                cargarDoctores(especialidadSelect.value);
-            } else {
-                console.log('No hay especialidad seleccionada inicialmente');
-            }
-            
-            // Manejar el envío del formulario
-            form.addEventListener('submit', async function(e) {
-                e.preventDefault();
-                
-                if (!form.checkValidity()) {
-                    e.stopPropagation();
-                    form.classList.add('was-validated');
-                    return;
-                }
-                
-                try {
-                    const formData = new URLSearchParams();
-                    formData.append('accion', 'actualizar');
-                    formData.append('id', form.querySelector('[name="id"]').value);
-                    formData.append('paciente', form.querySelector('[name="paciente"]').value);
-                    formData.append('especialidad', form.querySelector('[name="especialidad"]').value);
-                    formData.append('doctor', form.querySelector('[name="doctor"]').value);
-                    formData.append('fecha', form.querySelector('[name="fecha"]').value);
-                    formData.append('hora', form.querySelector('[name="hora"]').value);
-                    formData.append('estado', form.querySelector('[name="estado"]').value);
-                    
-                    console.log('Datos del formulario:');
-                    for (let pair of formData.entries()) {
-                        console.log(pair[0] + ': ' + pair[1]);
-                    }
-                    
-                    const response = await fetch('/citasMedicas_war_exploded/admin/citas/citas', {
-                        method: 'POST',
-                        body: formData,
-                        headers: {
-                            'Content-Type': 'application/x-www-form-urlencoded',
-                            'Accept': 'application/json'
-                        }
-                    });
-                    
-                    // Si la respuesta es una redirección, seguirla
-                    if (response.redirected) {
-                        window.location.href = response.url;
-                        return;
-                    }
-                    
-                    const text = await response.text();
-                    console.log('Respuesta del servidor:', text);
-                    
-                    let result;
-                    try {
-                        result = JSON.parse(text);
-                        console.log('JSON parseado:', result);
-                        
-                        if (result.success) {
-                            await Swal.fire({
-                                icon: 'success',
-                                title: 'Éxito',
-                                text: result.message || 'Operación realizada correctamente',
-                                showConfirmButton: false,
-                                timer: 1500
-                            });
-                            
-                            setTimeout(() => {
-                                if (result.redirect) {
-                                    window.location.href = result.redirect;
-                                } else {
-                                    window.location.href = '/citasMedicas_war_exploded/admin/citas/citas';
-                                }
-                            }, 1500);
-                        } else {
-                            throw new Error(result.message || 'Error en la operación');
-                        }
-                    } catch (e) {
-                        console.error('Error al parsear JSON:', e);
-                        throw new Error('La respuesta del servidor no es JSON válido: ' + text);
-                    }
-                } catch (error) {
-                    console.error('Error:', error);
-                    Swal.fire({
-                        icon: 'error',
-                        title: 'Error',
-                        text: error.message || 'Error en la operación'
-                    });
-                }
-            });
-        });
+        // Establecer fecha mínima como hoy
+        document.getElementById('fecha').min = new Date().toISOString().split('T')[0];
     </script>
 </body>
 </html> 

@@ -2,8 +2,9 @@ package com.gestorcitas.controlador;
 
 import java.io.IOException;
 import java.io.Serial;
-import static java.lang.System.out;
 import java.sql.SQLException;
+import java.text.ParseException;
+import java.util.Date;
 import java.util.List;
 
 import javax.servlet.ServletException;
@@ -16,7 +17,10 @@ import com.gestorcitas.dao.DoctorDAO;
 import com.gestorcitas.dao.EspecialidadDAO;
 import com.gestorcitas.modelo.Doctor;
 import com.gestorcitas.modelo.Especialidad;
+import com.gestorcitas.modelo.Paciente;
 import com.google.gson.Gson;
+
+import static java.lang.System.out;
 
 @WebServlet(urlPatterns = {
         "/admin/doctor/doctores",
@@ -47,7 +51,7 @@ public class DoctorServlet extends HttpServlet {
         try {
             if (servletPath.equals("/admin/doctor/doctores")) {
                 // Cargar las especialidades
-                List<Especialidad> especialidades = especialidadDAO.listarTodas();
+                List<Especialidad> especialidades = especialidadDAO.listarTodos();
                 // Listar todos los doctores
                 String buscar = request.getParameter("buscar");
                 List<Doctor> doctores;
@@ -208,3 +212,5 @@ public class DoctorServlet extends HttpServlet {
 
     }
 }
+
+    

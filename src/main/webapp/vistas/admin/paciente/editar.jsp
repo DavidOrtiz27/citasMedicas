@@ -105,62 +105,7 @@
     <div class="container-fluid">
         <div class="row">
             <!-- Sidebar -->
-            <nav class="col-md-3 col-lg-2 d-md-block sidebar">
-                <div class="position-sticky">
-                    <div class="text-center py-4">
-                        <h4 class="text-white"><fmt:message key="sidebar.header"/></h4>
-                        <p class="text-light opacity-75"><fmt:message key="sidebar.subtext"/></p>
-                    </div>
-                    
-                    <ul class="nav flex-column px-3">
-                        <li class="nav-item">
-                            <a class="nav-link" href="${pageContext.request.contextPath}/admin/inicio">
-                                <i class="bi bi-house"></i>
-                                <fmt:message key="sidebar.home"/>
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link active" href="${pageContext.request.contextPath}/admin/paciente/pacientes">
-                                <i class="bi bi-people"></i>
-                                <fmt:message key="sidebar.patients"/>
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" href="${pageContext.request.contextPath}/admin/doctor/doctores">
-                                <i class="bi bi-person-badge"></i>
-                                <fmt:message key="sidebar.doctors"/>
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" href="${pageContext.request.contextPath}/admin/citas/citas">
-                                <i class="bi bi-calendar-check"></i>
-                                <fmt:message key="sidebar.appointments"/>
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" href="${pageContext.request.contextPath}/admin/especialidad/especialidades">
-                                <i class="bi bi-list-check"></i>
-                                <fmt:message key="sidebar.specialties"/>
-                               
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" href="${pageContext.request.contextPath}/admin/horario/horarios">
-                                <i class="bi bi-clock"></i>
-                                <fmt:message key="sidebar.schedules"/>
-                                
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" href="${pageContext.request.contextPath}/admin/usuario/usuarios">
-                                <i class="bi bi-people-fill"></i>
-                                <fmt:message key="sidebar.appointments"/>
-                                
-                            </a>
-                        </li>
-                    </ul>
-                </div>
-            </nav>
+            <%@ include file="../../../includes/sitebarAdmin.jsp" %>
 
             <!-- Contenido principal -->
             <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4 py-4">
@@ -173,7 +118,7 @@
                 <!-- Formulario -->
                 <div class="card">
                     <div class="card-body">
-                        <form action="${pageContext.request.contextPath}/admin/paciente/editar/${paciente.id}" method="POST" class="needs-validation" novalidate>
+                        <form action="${pageContext.request.contextPath}/admin/paciente/pacientes/actualizar" method="POST" class="needs-validation" novalidate>
                             <input type="hidden" name="id" value="${paciente.id}">
                             
                             <div class="row">

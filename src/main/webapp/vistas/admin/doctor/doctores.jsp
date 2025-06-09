@@ -186,66 +186,9 @@
 <body>
 <div class="container-fluid">
     <div class="row">
-        <!-- Sidebar -->
-        <nav class="col-md-3 col-lg-2 d-md-block sidebar">
-            <div class="position-sticky">
-                <div class="text-center py-4">
-                    <h4 class="text-white">Sistema de Citas</h4>
-                    <p class="text-light opacity-75">Panel de Administración</p>
-                </div>
 
-                <ul class="nav flex-column px-3">
-                    <li class="nav-item">
-                        <a class="nav-link" href="${pageContext.request.contextPath}/admin/inicio">
-                            <i class="bi bi-house"></i>
-                            Inicio
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="${pageContext.request.contextPath}/admin/paciente/pacientes">
-                            <i class="bi bi-people"></i>
-                            Pacientes
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link active" href="${pageContext.request.contextPath}/admin/doctor/doctores">
-                            <i class="bi bi-person-badge"></i>
-                            Doctores
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="${pageContext.request.contextPath}/admin/citas/citas">
-                            <i class="bi bi-calendar-check"></i>
-                            Citas
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="${pageContext.request.contextPath}/admin/especialidad/especialidades">
-                            <i class="bi bi-list-check"></i>
-                            Especialidades
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="${pageContext.request.contextPath}/admin/horario/horarios">
-                            <i class="bi bi-clock"></i>
-                            Horarios
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="${pageContext.request.contextPath}/admin/usuario/usuarios">
-                            <i class="bi bi-person-gear"></i>
-                            Usuarios
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="${pageContext.request.contextPath}/logout">
-                            <i class="bi bi-box-arrow-right"></i>
-                            Cerrar Sesión
-                        </a>
-                    </li>
-                </ul>
-            </div>
-        </nav>
+        <%@ include file="../../../includes/sitebarAdmin.jsp" %>
+
         <!-- Main Content -->
         <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4">
             <div class="page-header">
@@ -308,10 +251,6 @@
                                                 <i class="bi bi-pencil"></i>
 
                                             </button>
-                                            <!--<a href="${pageContext.request.contextPath}/admin/doctores/editar?id=${doctor.id}"
-                                               class="btn btn-sm btn-primary"
-                                               title="Editar doctor">
-                                            </a>-->
                                             <button type="button"
                                                     class="btn btn-sm btn-danger"
                                                     data-bs-toggle="modal"
@@ -347,7 +286,6 @@
 <dialog class="modal fade" id="eliminarModal" tabindex="-1"
         aria-labelledby="eliminarModalLabel"
         aria-hidden="true">
-    <!--TODO: agregar clase al div de aqui abajo para modificar el diseño-->
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content">
             <div class="modal-header bg-danger text-white">

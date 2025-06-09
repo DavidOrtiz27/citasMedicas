@@ -202,59 +202,7 @@
     <div class="container-fluid">
         <div class="row">
             <!-- Sidebar -->
-            <nav class="col-md-3 col-lg-2 d-md-block sidebar">
-                <div class="position-sticky">
-                    <div class="text-center py-4">
-                        <h4 class="text-white">Sistema de Citas</h4>
-                        <p class="text-light opacity-75">Panel de Administración</p>
-                    </div>
-                    
-                    <ul class="nav flex-column px-3">
-                        <li class="nav-item">
-                            <a class="nav-link" href="${pageContext.request.contextPath}/admin/inicio">
-                                <i class="bi bi-house"></i>
-                                Inicio
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" href="${pageContext.request.contextPath}/admin/paciente/pacientes">
-                                <i class="bi bi-people"></i>
-                                Pacientes
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" href="${pageContext.request.contextPath}/admin/doctor/doctores">
-                                <i class="bi bi-person-badge"></i>
-                                Doctores
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" href="${pageContext.request.contextPath}/admin/citas/citas">
-                                <i class="bi bi-calendar-check"></i>
-                                Citas
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link active" href="${pageContext.request.contextPath}/admin/especialidad/especialidades">
-                                <i class="bi bi-list-check"></i>
-                                Especialidades
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" href="${pageContext.request.contextPath}/admin/horario/horarios">
-                                <i class="bi bi-clock"></i>
-                                Horarios
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" href="${pageContext.request.contextPath}/admin/usuario/usuarios">
-                                <i class="bi bi-person-gear"></i>
-                                Usuarios
-                            </a>
-                        </li>
-                    </ul>
-                </div>
-            </nav>
+            <%@ include file="../../../includes/sitebarAdmin.jsp" %>
 
             <!-- Contenido principal -->
             <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4 py-4">
@@ -266,11 +214,12 @@
 
                 <!-- Barra de búsqueda -->
                 <div class="search-box">
-                    <form class="row g-3" action="${pageContext.request.contextPath}/admin/especialidades" method="get">
+                    <form class="row g-3"  method="get">
                         <div class="col-md-8">
                             <div class="input-group">
-                                <input type="text" class="form-control" name="buscar" placeholder="Buscar por nombre o descripción...">
-                                <button class="btn btn-primary" type="submit">
+                                <input type="text" oninput="buscarfront()" class="form-control" id="searchInput" name="buscar"
+                                       placeholder="Buscar">
+                                <button class="btn btn-primary" type="button" id="searchButton" disabled>
                                     <i class="bi bi-search"></i> Buscar
                                 </button>
                             </div>
@@ -285,6 +234,7 @@
 
                 <!-- Tabla de especialidades -->
                 <div class="card">
+                    
                     <div class="card-body">
                         <div class="table-responsive">
                             <table class="table table-hover">
@@ -295,7 +245,7 @@
                                         <th>Acciones</th>
                                     </tr>
                                 </thead>
-                                <tbody>
+                                <tbody id="especialidadTableBody">
                                     <c:forEach items="${especialidades}" var="especialidad">
                                         <tr>
                                             <td>
@@ -305,19 +255,30 @@
                                                     </div>
                                                     <div class="specialty-details">
                                                         <span class="specialty-name">${especialidad.nombre}</span>
-                                                        <span class="specialty-description">${especialidad.descripcion}</span>
                                                     </div>
                                                 </div>
                                             </td>
                                             <td>${especialidad.descripcion}</td>
                                             <td>
                                                 <div class="btn-group">
-                                                    <button class="btn btn-sm btn-primary btn-action" onclick="editarEspecialidad('${especialidad.id}')">
+                                                    <button class="btn btn-sm btn-primary btn-action"
+                                                            data-bs-toggle="modal" data-bs-target="#especialidadModal"
+                                                            title="Editar especialidad"
+                                                            onclick="editarEspecialidad('${especialidad.id}')">
                                                         <i class="bi bi-pencil"></i>
                                                     </button>
-                                                    <button class="btn btn-sm btn-danger btn-action" onclick="eliminarEspecialidad('${especialidad.id}')">
+                                                    <button class="btn btn-sm btn-danger btn-action"
+                                                            data-bs-toggle="modal"
+                                                            data-bs-target="#confirmacionModal"
+                                                            title="Eliminar especialidad"
+                                                            onclick="eliminarEspecialidad('${especialidad.id}')">
                                                         <i class="bi bi-trash"></i>
                                                     </button>
+
+                                                </div>
+                                                <div id="informacion${especialidad.id}"
+                                                     data-nombre="${especialidad.nombre}"
+                                                     data-descripcion="${especialidad.descripcion}">
                                                 </div>
                                             </td>
                                         </tr>
@@ -340,9 +301,7 @@
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body">
-                    <form id="especialidadForm" class="needs-validation" novalidate>
-                        <input type="hidden" id="especialidadId">
-                        
+                    <form id="especialidadForm" action="${pageContext.request.contextPath}/admin/especialidad/especialidades/agregar" method="POST" class="needs-validation" novalidate>
                         <div class="mb-3">
                             <label for="nombre" class="form-label required-field">Nombre</label>
                             <input type="text" class="form-control" id="nombre" name="nombre" required>
@@ -358,92 +317,169 @@
                                 Por favor ingrese una descripción.
                             </div>
                         </div>
+                        <input type="hidden" id="especialidadId" name="id" value="">
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                            <button type="submit" class="btn btn-primary" data-modo="agregar" id="guardar">Guardar</button>
+                        </div>
                     </form>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-                    <button type="button" class="btn btn-primary" onclick="guardarEspecialidad()">Guardar</button>
                 </div>
             </div>
         </div>
     </div>
 
+
+    <!-- Modal de Eliminación -->
+
+    <dialog class="modal fade" id="confirmacionModal" tabindex="-1"
+            aria-labelledby="eliminarModalLabel"
+            aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header bg-danger text-white">
+                    <h5 class="modal-title" id="eliminarModalLabel">
+                        <i class="bi bi-exclamation-triangle me-2"></i>
+                        Confirmar Eliminación
+                    </h5>
+                    <button type="button"
+                            class="btn-close btn-close-white"
+                            data-bs-dismiss="modal"
+                            aria-label="Cerrar"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="alert alert-danger mb-3">
+                        <i class="bi bi-exclamation-circle me-2"></i>
+                        Esta acción no se puede deshacer.
+                    </div>
+
+                    <div class="card mb-3">
+                        <div class="card-header bg-light">
+                            <h6 class="mb-0">Información de la especialidad</h6>
+                        </div>
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-6 mb-2">
+                                    <label class="fw-bold">Nombre</label>
+                                    <p id="nombreEliminar"></p>
+                                </div>
+                                <div class="col-md-6 mb-2">
+                                    <label class="fw-bold">Descripcion:</label>
+                                    <p id="descripcionEliminar"></p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <p class="text-center mb-0">
+                        <i class="bi bi-question-circle me-2"></i>
+                        ¿Está seguro que desea eliminar esta especialidad?
+                    </p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button"
+                            class="btn btn-secondary"
+                            data-bs-dismiss="modal">
+                        <i class="bi bi-x-circle me-1"></i>
+                        Cancelar
+                    </button>
+                    <form action="${pageContext.request.contextPath}/admin/especialidad/especialidades/eliminar"
+                          method="POST"
+                          class="d-inline">
+                        <input type="hidden" id="id_especialidadEliminar" name="id" value="">
+                        <button type="submit"
+                                class="btn btn-danger">
+                            <i class="bi bi-trash me-1"></i>
+                            Eliminar Especialidad
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </dialog>
+
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script>
+
+        document.addEventListener("DOMContentLoaded", function () {
+            const form = document.getElementById("especialidadForm");
+            const botonGuardar = document.getElementById("guardar");
+
+            // Escuchar el evento submit del formulario
+            form.addEventListener("submit", function (e) {
+                const modo = botonGuardar.dataset.modo;
+
+                // Define la URL base
+                let actionURL = "";
+
+                // Define la URL dependiendo del modo
+                if (modo === "agregar") {
+                    actionURL = `${pageContext.request.contextPath}/admin/especialidad/especialidades/agregar`;
+                } else if (modo === "actualizar") {
+                    actionURL = `${pageContext.request.contextPath}/admin/especialidad/especialidades/actualizar`;
+                }
+
+                // Establece el action al formulario antes de enviarlo
+                form.action = actionURL;
+            });
+        });
+
+        // Búsqueda en la tabla (solo frontend)
+        function buscarfront(){
+            const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+            const rows = document.getElementById('especialidadTableBody').getElementsByTagName('tr');
+            for (let row of rows) {
+                const text = row.textContent.toLowerCase();
+                row.style.display = text.includes(searchTerm) ? '' : 'none';
+            }
+        }
+
+
         // Función para editar especialidad
         function editarEspecialidad(id) {
-            fetch('${pageContext.request.contextPath}/admin/especialidades/' + id)
-                .then(response => response.json())
-                .then(especialidad => {
-                    document.getElementById('especialidadId').value = especialidad.id;
-                    document.getElementById('nombre').value = especialidad.nombre;
-                    document.getElementById('descripcion').value = especialidad.descripcion;
-                    
-                    document.getElementById('especialidadModalLabel').textContent = 'Editar Especialidad';
-                    new bootstrap.Modal(document.getElementById('especialidadModal')).show();
-                })
-                .catch(error => {
-                    console.error('Error:', error);
-                    alert('Error al cargar los datos de la especialidad');
-                });
+                const div = document.getElementById('informacion' + id);
+
+            const nombre = div.dataset.nombre;
+            const descripcion = div.dataset.descripcion;
+
+            document.getElementById('especialidadId').value = id;
+            document.getElementById('nombre').value = nombre;
+            document.getElementById('descripcion').value = descripcion;
+            document.getElementById('especialidadModalLabel').innerHTML = 'Editar Especialidad';
+            document.getElementById('guardar').dataset.modo = 'actualizar';
         }
 
         // Función para eliminar especialidad
         function eliminarEspecialidad(id) {
-            if (confirm('¿Está seguro de eliminar esta especialidad?')) {
-                fetch('${pageContext.request.contextPath}/admin/especialidades/' + id, {
-                    method: 'DELETE'
-                })
-                .then(response => {
-                    if (response.ok) {
-                        window.location.reload();
-                    } else {
-                        throw new Error('Error al eliminar la especialidad');
-                    }
-                })
-                .catch(error => {
-                    console.error('Error:', error);
-                    alert('Error al eliminar la especialidad');
-                });
-            }
+            const div = document.getElementById('informacion' + id);
+
+            const nombre = div.dataset.nombre;
+            const descripcion = div.dataset.descripcion;
+
+            document.getElementById('nombreEliminar').innerHTML = nombre;
+            document.getElementById('descripcionEliminar').innerHTML = descripcion;
+            document.getElementById('id_especialidadEliminar').value = id;
         }
 
-        // Función para guardar especialidad
-        function guardarEspecialidad() {
+
+        document.addEventListener("DOMContentLoaded", function () {
+            const modal = document.getElementById('especialidadModal');
             const form = document.getElementById('especialidadForm');
-            if (!form.checkValidity()) {
-                form.classList.add('was-validated');
-                return;
-            }
+            const modalTitle = document.getElementById('especialidadModalLabel');
+            const botonGuardar = document.getElementById('guardar');
 
-            const especialidadData = {
-                id: document.getElementById('especialidadId').value,
-                nombre: document.getElementById('nombre').value,
-                descripcion: document.getElementById('descripcion').value
-            };
+            modal.addEventListener('hidden.bs.modal', function () {
+                // Resetear formulario
+                form.reset();
 
-            const method = especialidadData.id ? 'PUT' : 'POST';
-            const url = '${pageContext.request.contextPath}/admin/especialidades' + (especialidadData.id ? '/' + especialidadData.id : '');
+                // Restaurar valores predeterminados
+                modalTitle.textContent = 'Nueva especialidad';
+                botonGuardar.textContent = 'Guardar';
+                botonGuardar.dataset.modo = 'agregar';
 
-            fetch(url, {
-                method: method,
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify(especialidadData)
-            })
-            .then(response => {
-                if (response.ok) {
-                    window.location.reload();
-                } else {
-                    throw new Error('Error al guardar la especialidad');
-                }
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                alert('Error al guardar la especialidad');
+                // Limpiar campo oculto de ID
+                document.getElementById('id_especialidadActualizar').value = '';
             });
-        }
+        });
     </script>
 </body>
 </html>

@@ -5,6 +5,8 @@ import java.time.LocalTime;
 public class Horario {
     private int id;
     private int doctorId;
+    private String nombreDoctor;
+    private String apellidoDoctor;
     private String diaSemana;
     private LocalTime horaInicio;
     private LocalTime horaFin;
@@ -13,9 +15,11 @@ public class Horario {
     public Horario() {
     }
 
-    public Horario(int id, int doctorId, String diaSemana, LocalTime horaInicio, LocalTime horaFin, boolean activo) {
+    public Horario(int id, int doctorId, String nombreDoctor, String apellidoDoctor, String diaSemana, LocalTime horaInicio, LocalTime horaFin, boolean activo) {
         this.id = id;
         this.doctorId = doctorId;
+        this.nombreDoctor = nombreDoctor;
+        this.apellidoDoctor = apellidoDoctor;
         this.diaSemana = diaSemana;
         this.horaInicio = horaInicio;
         this.horaFin = horaFin;
@@ -23,6 +27,22 @@ public class Horario {
     }
 
     // Getters y Setters
+    public String getNombreDoctor() {
+        return nombreDoctor;
+    }
+
+    public void setNombreDoctor(String nombreDoctor) {
+        this.nombreDoctor = nombreDoctor;
+    }
+
+    public String getApellidoDoctor() {
+        return apellidoDoctor;
+    }
+
+    public void setApellidoDoctor(String apellidoDoctor) {
+        this.apellidoDoctor = apellidoDoctor;
+    }
+
     public int getId() {
         return id;
     }
@@ -70,4 +90,4 @@ public class Horario {
     public void setActivo(boolean activo) {
         this.activo = activo;
     }
-} 
+}
