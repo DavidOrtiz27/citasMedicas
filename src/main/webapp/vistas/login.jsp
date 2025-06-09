@@ -1,11 +1,16 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
+<%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
+
+<fmt:setLocale value="${param.lang != null ? param.lang : 'es'}" />
+<fmt:setBundle basename="messages" />
+
 <!DOCTYPE html>
 <html lang="es">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Login - Sistema de Citas Médicas</title>
+    <title><fmt:message key="login.title"/></title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.7.2/font/bootstrap-icons.css" rel="stylesheet">
     <style>
@@ -128,39 +133,22 @@
 <body>
     <div class="login-container">
         <div class="login-header">
-            <h1>Sistema de Citas Médicas</h1>
-            <p>Ingrese sus credenciales para continuar</p>
+            <i class="bi bi-hospital"></i>
+            <h2><fmt:message key="login.systemName" /></h2>
+            <p><fmt:message key="login.instructions" /></p>
         </div>
         
-        <% if (request.getParameter("error") != null) { %>
-            <div class="alert alert-danger">
-                <% 
-                    String error = request.getParameter("error");
-                    switch (error) {
-                        case "credenciales_invalidas":
-                            out.print("Usuario o contraseña incorrectos");
-                            break;
-                        case "rol_invalido":
-                            out.print("Rol de usuario no válido");
-                            break;
-                        case "error_sistema":
-                            out.print("Error del sistema. Por favor, intente más tarde");
-                            break;
-                        default:
-                            out.print("Error al iniciar sesión");
-                    }
-                %>
-            </div>
-        <% } %>
         
+
         <form action="${pageContext.request.contextPath}/login" method="post">
-            <div class="mb-3">
-                <label for="username" class="form-label">Usuario</label>
-                <input type="text" class="form-control" id="username" name="username" required>
+            <div class="form-floating">
+                <input type="text" class="form-control" id="username" name="username" placeholder="<fmt:message key='login.username' />" required>
+                <label for="username"><i class="bi bi-person me-2"></i><fmt:message key="login.username" /></label>
             </div>
-            <div class="mb-3">
-                <label for="password" class="form-label">Contraseña</label>
-                <input type="password" class="form-control" id="password" name="password" required>
+            
+            <div class="form-floating">
+                <input type="password" class="form-control" id="password" name="password" placeholder="<fmt:message key='login.password' />" required>
+                <label for="password"><i class="bi bi-lock me-2"></i><fmt:message key="login.password" /></label>
             </div>
             <div class="captcha-container">
                 <img src="${pageContext.request.contextPath}/captcha" 
@@ -168,15 +156,19 @@
                      alt="CAPTCHA"
                      onclick="this.src='${pageContext.request.contextPath}/captcha?' + Math.random()">
                 <div class="form-floating">
-                    <input type="text" class="form-control" id="captcha" name="captcha" placeholder="Código CAPTCHA" required>
-                    <label for="captcha"><i class="bi bi-shield-lock me-2"></i>Código CAPTCHA</label>
+                    <input type="text" class="form-control" id="captcha" name="captcha" placeholder="<fmt:message key='login.captcha.label' />" required>
+                    <label for="captcha"><i class="bi bi-shield-lock me-2"></i><fmt:message key="login.captcha.label" /></label>
                 </div>
-                <small class="text-muted">Haga clic en la imagen para actualizar el código</small>
+                <small class="text-muted"><fmt:message key="login.captcha.refreshHint" /></small>
             </div>
-            <button type="submit" class="btn btn-login">Iniciar Sesión</button>
+            
+            <button type="submit" class="btn btn-primary btn-login w-100">
+                <i class="bi bi-box-arrow-in-right me-2"></i><fmt:message key="login.button" />
+            </button>
         </form>
     </div>
-    
+
+
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>

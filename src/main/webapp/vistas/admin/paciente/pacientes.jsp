@@ -1,10 +1,14 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8" %>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
+<%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
+
+<fmt:setLocale value="${param.lang != null ? param.lang : 'es'}" />
+<fmt:setBundle basename="messages" />
 <!DOCTYPE html>
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <title>Gestión de Pacientes - Sistema de Citas Médicas</title>
+    <title><fmt:message key="patients.title"/></title>
     <!-- Bootstrap CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.7.2/font/bootstrap-icons.css" rel="stylesheet">
@@ -84,31 +88,36 @@
                 <p>Administra los pacientes registrados en el sistema</p>
             </div>
 
-            <!-- Mensajes de alerta -->
-            <c:if test="${not empty mensaje}">
-                <div class="alert alert-success alert-dismissible fade show" role="alert">
-                    <i class="bi bi-check-circle"></i> ${mensaje}
-                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                </div>
-            </c:if>
-            <c:if test="${not empty error}">
-                <div class="alert alert-danger alert-dismissible fade show" role="alert">
-                    <i class="bi bi-exclamation-triangle"></i> ${error}
-                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                </div>
-            </c:if>
+                <!-- Mensajes de alerta -->
+                <c:if test="${not empty mensaje}">
+                    <div class="alert alert-success alert-dismissible fade show" role="alert">
+                        <i class="bi bi-check-circle"></i> ${mensaje}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+                </c:if>
+                <c:if test="${not empty error}">
+                    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                        <i class="bi bi-exclamation-triangle"></i> ${error}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+                </c:if>
 
-            <!-- Barra de búsqueda -->
-            <div class="search-box">
-                <form action="${pageContext.request.contextPath}/admin/paciente/pacientes" method="GET" class="d-flex">
-                    <input type="text" name="buscar" class="form-control" placeholder="Buscar pacientes..."
-                           value="${param.buscar}">
-                    <button type="submit" class="btn btn-primary">
-                        <i class="bi bi-search"></i>
-                    </button>
-                </form>
-            </div>
+                <!-- Barra de búsqueda -->
+                <div class="search-box">
+                    <form action="${pageContext.request.contextPath}/admin/paciente/pacientes" method="GET" class="d-flex">
+                        <input type="text" name="buscar" class="form-control" placeholder="Buscar pacientes..." value="${param.buscar}">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="bi bi-search"></i>
+                        </button>
+                    </form>
+                </div>
 
+                <!-- Botón Nuevo Paciente -->
+                <div class="mb-4">
+                    <a href="${pageContext.request.contextPath}/admin/paciente/pacientes/nuevo" class="btn btn-primary">
+                        <i class="bi bi-plus-circle"></i> <fmt:message key="patients.newPatient.button"/>
+                    </a>
+                </div>
             <!-- Botón Nuevo Paciente -->
             <div class="mb-4">
                 <a href="${pageContext.request.contextPath}/admin/paciente/pacientes/nuevo" class="btn btn-primary">
@@ -116,6 +125,140 @@
                 </a>
             </div>
 
+                <!-- Tabla de Pacientes -->
+                <div class="card">
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>ID</th>
+                                        <th><fmt:message key="form.fields.id"/></th>
+                                        <th><fmt:message key="form.fields.names"/></th>
+                                        <th><fmt:message key="form.fields.lastname"/></th>
+                                        <th><fmt:message key="form.fields.email"/></th>
+                                        <th><fmt:message key="form.fields.phone"/></th>
+                                        <th><fmt:message key="form.fields.actions"/></th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <c:forEach var="paciente" items="${pacientes}">
+                                        <tr>
+                                            <td>${paciente.id}</td>
+                                            <td>${paciente.dni}</td>
+                                            <td>${paciente.nombres}</td>
+                                            <td>${paciente.apellidos}</td>
+                                            <td>${paciente.email}</td>
+                                            <td>${paciente.telefono}</td>
+                                            <td>
+                                                <div class="btn-group" role="group">
+                                                    <a href="${pageContext.request.contextPath}/admin/paciente/pacientes/editar?id=${paciente.id}" 
+                                                       class="btn btn-sm btn-primary" 
+                                                       title="Editar paciente">
+                                                        <i class="bi bi-pencil"></i>
+                                                    </a>
+                                                    <button type="button" 
+                                                            class="btn btn-sm btn-danger" 
+                                                            data-bs-toggle="modal" 
+                                                            data-bs-target="#eliminarModal${paciente.id}"
+                                                            title="Eliminar paciente">
+                                                        <i class="bi bi-trash"></i>
+                                                    </button>
+                                                </div>
+
+                                                <!-- Modal de Eliminación -->
+                                                <div class="modal fade" 
+                                                     id="eliminarModal${paciente.id}" 
+                                                     tabindex="-1" 
+                                                     aria-labelledby="eliminarModalLabel${paciente.id}" 
+                                                     aria-hidden="true">
+                                                    <div class="modal-dialog modal-dialog-centered">
+                                                        <div class="modal-content">
+                                                            <div class="modal-header bg-danger text-white">
+                                                                <h5 class="modal-title" id="eliminarModalLabel${paciente.id}">
+                                                                    <i class="bi bi-exclamation-triangle me-2"></i>
+                                                                    <fmt:message key="form.fields.id"/><fmt:message key="btn.confirm.deletion"/>
+                                                                </h5>
+                                                                <button type="button" 
+                                                                        class="btn-close btn-close-white" 
+                                                                        data-bs-dismiss="modal" 
+                                                                        aria-label="Cerrar"></button>
+                                                            </div>
+                                                            <div class="modal-body">
+                                                                <div class="alert alert-danger mb-3">
+                                                                    <i class="bi bi-exclamation-circle me-2"></i>
+                                                                    <fmt:message key="btn.confirm.deletion"/>
+                                                                </div>
+                                                                
+                                                                <div class="card mb-3">
+                                                                    <div class="card-header bg-light">
+                                                                        <h6 class="mb-0"><fmt:message key="patient.fullinfo"/></h6>
+                                                                    </div>
+                                                                    <div class="card-body">
+                                                                        <div class="row">
+                                                                            <div class="col-md-6 mb-2">
+                                                                                <label class="fw-bold"><fmt:message key="patient.fullname"/>:</label>
+                                                                                <p>${paciente.nombres} ${paciente.apellidos}</p>
+                                                                            </div>
+                                                                            <div class="col-md-6 mb-2">
+                                                                                <label class="fw-bold"><fmt:message key="form.fields.id"/>:</label>
+                                                                                <p>${paciente.dni}</p>
+                                                                            </div>
+                                                                            <div class="col-md-6 mb-2">
+                                                                                <label class="fw-bold"><fmt:message key="form.fields.email"/>:</label>
+                                                                                <p>${paciente.email}</p>
+                                                                            </div>
+                                                                            <div class="col-md-6 mb-2">
+                                                                                <label class="fw-bold"><fmt:message key="form.fields.phone"/>:</label>
+                                                                                <p>${paciente.telefono}</p>
+                                                                            </div>
+                                                                            <c:if test="${not empty paciente.direccion}">
+                                                                                <div class="col-12 mb-2">
+                                                                                    <label class="fw-bold"><fmt:message key="patient.address"/>:</label>
+                                                                                    <p>${paciente.direccion}</p>
+                                                                                </div>
+                                                                            </c:if>
+                                                                        </div>
+                                                                    </div>
+                                                                </div>
+                                                                
+                                                                <p class="text-center mb-0">
+                                                                    <i class="bi bi-question-circle me-2"></i>
+                                                                    <fmt:message key="patients.delete.warningtwo"/>
+                                                                </p>
+                                                            </div>
+                                                            <div class="modal-footer">
+                                                                <button type="button" 
+                                                                        class="btn btn-secondary" 
+                                                                        data-bs-dismiss="modal">
+                                                                    <i class="bi bi-x-circle me-1"></i>
+                                                                    <fmt:message key="form.fields.cancel"/>
+                                                                </button>
+                                                                <form action="${pageContext.request.contextPath}/admin/paciente/pacientes/eliminar" 
+                                                                      method="POST" 
+                                                                      class="d-inline">
+                                                                    <input type="hidden" name="id" value="${paciente.id}">
+                                                                    <button type="submit" 
+                                                                            class="btn btn-danger">
+                                                                        <i class="bi bi-trash me-1"></i>
+                                                                        <fmt:message key="btn.confirm.deletion"/>
+                                                                    </button>
+                                                                </form>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    </c:forEach>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
             <!-- Tabla de Pacientes -->
             <div class="card">
                 <div class="card-body">

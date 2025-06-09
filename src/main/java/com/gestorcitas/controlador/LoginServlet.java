@@ -16,14 +16,14 @@ import com.gestorcitas.modelo.Usuario;
 @WebServlet("/login")
 public class LoginServlet extends HttpServlet {
     private static final long serialVersionUID = 1L;
-    
+
     private UsuarioDAO usuarioDAO;
-    
+
     @Override
     public void init() throws ServletException {
         usuarioDAO = new UsuarioDAO();
     }
-    
+
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response) 
             throws ServletException, IOException {
@@ -36,14 +36,14 @@ public class LoginServlet extends HttpServlet {
             throws ServletException, IOException {
         String username = request.getParameter("username");
         String password = request.getParameter("password");
-        
+
         try {
             Usuario usuario = usuarioDAO.validarUsuario(username, password);
-            
+
             if (usuario != null) {
                 HttpSession session = request.getSession();
                 session.setAttribute("usuario", usuario);
-                
+
                 // Redirigir según el rol
                 switch (usuario.getRol().toLowerCase()) {
                     case "admin":
@@ -66,4 +66,5 @@ public class LoginServlet extends HttpServlet {
             response.sendRedirect(request.getContextPath() + "/vistas/login.jsp?error=error_sistema");
         }
     }
-} 
+
+}

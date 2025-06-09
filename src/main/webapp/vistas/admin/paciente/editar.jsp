@@ -1,9 +1,13 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
+<%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
+
+<fmt:setLocale value="${param.lang != null ? param.lang : 'es'}" />
+<fmt:setBundle basename="messages" />
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <title>Editar Paciente - Sistema de Citas Médicas</title>
+    <title><fmt:message key="edit.title"/></title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.7.2/font/bootstrap-icons.css" rel="stylesheet">
     <style>
@@ -107,8 +111,8 @@
             <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4 py-4">
                 <!-- Encabezado de página -->
                 <div class="page-header">
-                    <h1>Editar Paciente</h1>
-                    <p>Modifique los datos del paciente</p>
+                    <h1><fmt:message key="form.header"/></h1>
+                    <p><fmt:message key="form.subtext"/></p>
                 </div>
 
                 <!-- Formulario -->
@@ -119,54 +123,54 @@
                             
                             <div class="row">
                                 <div class="col-md-6 mb-3">
-                                    <label for="nombres" class="form-label required-field">Nombres</label>
+                                    <label for="nombres" class="form-label required-field"><fmt:message key="form.fields.names"/></label>
                                     <input type="text" class="form-control" id="nombres" name="nombres" value="${paciente.nombres}" required>
                                     <div class="invalid-feedback">
-                                        Por favor ingrese los nombres.
+                                        <fmt:message key="form.fields.warnings.names"/>
                                     </div>
                                 </div>
                                 
                                 <div class="col-md-6 mb-3">
-                                    <label for="apellidos" class="form-label required-field">Apellidos</label>
+                                    <label for="apellidos" class="form-label required-field"><fmt:message key="form.fields.lastname"/></label>
                                     <input type="text" class="form-control" id="apellidos" name="apellidos" value="${paciente.apellidos}" required>
                                     <div class="invalid-feedback">
-                                        Por favor ingrese los apellidos.
+                                        <fmt:message key="form.fields.warnings.lastname"/>
                                     </div>
                                 </div>
                             </div>
 
                             <div class="row">
                                 <div class="col-md-6 mb-3">
-                                    <label for="dni" class="form-label required-field">DNI</label>
+                                    <label for="dni" class="form-label required-field"><fmt:message key="form.fields.id"/></label>
                                     <input type="text" class="form-control" id="dni" name="dni" value="${paciente.dni}" required>
                                     <div class="invalid-feedback">
-                                        Por favor ingrese el DNI.
+                                        <fmt:message key="form.fields.warnings.id"/>
                                     </div>
                                 </div>
                                 
                                 <div class="col-md-6 mb-3">
-                                    <label for="telefono" class="form-label required-field">Teléfono</label>
+                                    <label for="telefono" class="form-label required-field"><fmt:message key="form.fields.phone"/></label>
                                     <input type="tel" class="form-control" id="telefono" name="telefono" value="${paciente.telefono}" required>
                                     <div class="invalid-feedback">
-                                        Por favor ingrese el teléfono.
+                                        <fmt:message key="form.fields.warnings.phone"/>
                                     </div>
                                 </div>
                             </div>
 
                             <div class="mb-3">
-                                <label for="email" class="form-label required-field">Email</label>
+                                <label for="email" class="form-label required-field"><fmt:message key="form.fields.email"/></label>
                                 <input type="email" class="form-control" id="email" name="email" value="${paciente.email}" required>
                                 <div class="invalid-feedback">
-                                    Por favor ingrese un email válido.
+                                    <fmt:message key="form.fields.warnings.email"/>
                                 </div>
                             </div>
 
                             <div class="d-flex justify-content-end gap-2">
                                 <a href="${pageContext.request.contextPath}/admin/paciente/pacientes" class="btn btn-secondary">
-                                    Cancelar
+                                    <fmt:message key="form.fields.cancel"/>
                                 </a>
                                 <button type="submit" class="btn btn-primary">
-                                    Guardar Cambios
+                                    <fmt:message key="form.edit.fields.submit"/>
                                 </button>
                             </div>
                         </form>
