@@ -312,4 +312,29 @@ public class PacienteDAO {
         }
         return pacientes;
     }
+
+    public Paciente buscarPorDocumento(String documento) throws SQLException {
+        String sql = "SELECT * FROM pacientes WHERE dni = ?";
+        
+        try (Connection conn = DatabaseUtil.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+            
+            stmt.setString(1, documento);
+            
+            try (ResultSet rs = stmt.executeQuery()) {
+                if (rs.next()) {
+                    Paciente paciente = new Paciente();
+                    paciente.setId(rs.getInt("id"));
+                    paciente.setNombres(rs.getString("nombres"));
+                    paciente.setApellidos(rs.getString("apellidos"));
+                    paciente.setDni(rs.getString("dni"));
+                    paciente.setFechaNacimiento(rs.getDate("fecha_nacimiento"));
+                    paciente.setTelefono(rs.getString("telefono"));
+                    paciente.setEmail(rs.getString("email"));
+                    return paciente;
+                }
+            }
+        }
+        return null;
+    }
 } 

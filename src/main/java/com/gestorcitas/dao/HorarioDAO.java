@@ -119,4 +119,34 @@ public class HorarioDAO {
     public boolean actualizar(Horario horario) throws SQLException {
         return guardar(horario);
     }
+
+    public List<Horario> listarDisponibles(int doctorId, java.sql.Date fecha) throws SQLException {
+        List<Horario> horarios = new ArrayList<>();
+        String sql = "SELECT h.* FROM horarios h " +
+                     "WHERE h.doctor_id = ? " +
+                     "AND h.fecha = ? " +
+                     "AND h.disponible = true " +
+                     "AND h.hora > NOW() " +
+                     "ORDER BY h.hora";
+        
+        try (Connection conn = DatabaseUtil.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+            
+            stmt.setInt(1, doctorId);
+            stmt.setDate(2, fecha);
+            
+            try (ResultSet rs = stmt.executeQuery()) {
+                while (rs.next()) {
+                    Horario horario = new Horario();
+                    horario.setId(rs.getInt("id"));
+                    horario.setDoctorId(rs.getInt("doctor_id"));
+                    horario.setFecha(rs.getDate("fecha"));
+                    horario.setHora(rs.getTime("hora"));
+                    horario.setDisponible(rs.getBoolean("disponible"));
+                    horarios.add(horario);
+                }
+            }
+        }
+        return horarios;
+    }
 } 

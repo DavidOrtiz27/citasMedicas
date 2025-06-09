@@ -131,6 +131,25 @@ public class EspecialidadDAO {
         return 0;
     }
     
+    public List<Especialidad> listarTodos() throws SQLException {
+        List<Especialidad> especialidades = new ArrayList<>();
+        String sql = "SELECT * FROM especialidades ORDER BY nombre";
+        
+        try (Connection conn = DatabaseUtil.getConnection();
+             Statement stmt = conn.createStatement();
+             ResultSet rs = stmt.executeQuery(sql)) {
+            
+            while (rs.next()) {
+                Especialidad especialidad = new Especialidad();
+                especialidad.setId(rs.getInt("id"));
+                especialidad.setNombre(rs.getString("nombre"));
+                especialidad.setDescripcion(rs.getString("descripcion"));
+                especialidades.add(especialidad);
+            }
+        }
+        return especialidades;
+    }
+    
     private Especialidad mapearEspecialidad(ResultSet rs) throws SQLException {
         Especialidad especialidad = new Especialidad();
         especialidad.setId(rs.getInt("id"));

@@ -7,7 +7,11 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 import com.gestorcitas.modelo.Cita;
 import com.gestorcitas.modelo.Doctor;
@@ -16,6 +20,16 @@ import com.gestorcitas.modelo.Paciente;
 import com.gestorcitas.util.DatabaseUtil;
 
 public class CitaDAO {
+    private Connection conexion;
+    
+    public CitaDAO() {
+        try {
+            conexion = DatabaseUtil.getConnection();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+    
     public List<Cita> listarTodas() throws SQLException {
         List<Cita> citas = new ArrayList<>();
         String sql = "SELECT c.*, p.nombres as paciente_nombres, p.apellidos as paciente_apellidos, " +
@@ -27,8 +41,7 @@ public class CitaDAO {
                     "JOIN especialidades e ON d.especialidad_id = e.id " +
                     "ORDER BY c.fecha DESC, c.hora DESC";
 
-        try (Connection conn = DatabaseUtil.getConnection();
-             Statement stmt = conn.createStatement();
+        try (Statement stmt = conexion.createStatement();
              ResultSet rs = stmt.executeQuery(sql)) {
             while (rs.next()) {
                 citas.add(mapearCita(rs));
@@ -39,18 +52,16 @@ public class CitaDAO {
 
     public boolean crear(Cita cita) throws SQLException {
         String sql = "INSERT INTO citas (fecha, hora, paciente_id, doctor_id, estado, fecha_creacion) " +
-                    "VALUES (?, ?, ?, ?, ?, ?)";
+                    "VALUES (?, ?, ?, ?, ?, NOW())";
 
-        try (Connection conn = DatabaseUtil.getConnection();
-             PreparedStatement stmt = conn.prepareStatement(sql)) {
+        try (PreparedStatement stmt = conexion.prepareStatement(sql)) {
             stmt.setDate(1, new java.sql.Date(cita.getFecha().getTime()));
             stmt.setString(2, cita.getHora());
             stmt.setInt(3, cita.getPaciente().getId());
             stmt.setInt(4, cita.getDoctor().getId());
             stmt.setString(5, cita.getEstado());
-            stmt.setTimestamp(6, new java.sql.Timestamp(cita.getFechaCreacion().getTime()));
-
-            return stmt.executeUpdate() > 0;
+            stmt.executeUpdate();
+            return true;
         }
     }
 
@@ -58,8 +69,7 @@ public class CitaDAO {
         String sql = "UPDATE citas SET fecha = ?, hora = ?, paciente_id = ?, " +
                     "doctor_id = ?, estado = ?, motivo_cancelacion = ? WHERE id = ?";
 
-        try (Connection conn = DatabaseUtil.getConnection();
-             PreparedStatement stmt = conn.prepareStatement(sql)) {
+        try (PreparedStatement stmt = conexion.prepareStatement(sql)) {
             stmt.setDate(1, new java.sql.Date(cita.getFecha().getTime()));
             stmt.setString(2, cita.getHora());
             stmt.setInt(3, cita.getPaciente().getId());
@@ -67,18 +77,18 @@ public class CitaDAO {
             stmt.setString(5, cita.getEstado());
             stmt.setString(6, cita.getMotivoCancelacion());
             stmt.setInt(7, cita.getId());
-
-            return stmt.executeUpdate() > 0;
+            stmt.executeUpdate();
+            return true;
         }
     }
 
     public boolean eliminar(int id) throws SQLException {
         String sql = "DELETE FROM citas WHERE id = ?";
 
-        try (Connection conn = DatabaseUtil.getConnection();
-             PreparedStatement stmt = conn.prepareStatement(sql)) {
+        try (PreparedStatement stmt = conexion.prepareStatement(sql)) {
             stmt.setInt(1, id);
-            return stmt.executeUpdate() > 0;
+            stmt.executeUpdate();
+            return true;
         }
     }
 
@@ -92,13 +102,12 @@ public class CitaDAO {
                     "JOIN especialidades e ON d.especialidad_id = e.id " +
                     "WHERE c.id = ?";
 
-        try (Connection conn = DatabaseUtil.getConnection();
-             PreparedStatement stmt = conn.prepareStatement(sql)) {
+        try (PreparedStatement stmt = conexion.prepareStatement(sql)) {
             stmt.setInt(1, id);
-            try (ResultSet rs = stmt.executeQuery()) {
-                if (rs.next()) {
-                    return mapearCita(rs);
-                }
+            ResultSet rs = stmt.executeQuery();
+            
+            if (rs.next()) {
+                return mapearCita(rs);
             }
         }
         return null;
@@ -107,16 +116,14 @@ public class CitaDAO {
     public boolean existeCitaEnHorario(Date fecha, String hora, int doctorId) throws SQLException {
         String sql = "SELECT COUNT(*) FROM citas WHERE fecha = ? AND hora = ? AND doctor_id = ? AND estado != 'CANCELADA'";
 
-        try (Connection conn = DatabaseUtil.getConnection();
-             PreparedStatement stmt = conn.prepareStatement(sql)) {
+        try (PreparedStatement stmt = conexion.prepareStatement(sql)) {
             stmt.setDate(1, new java.sql.Date(fecha.getTime()));
             stmt.setString(2, hora);
             stmt.setInt(3, doctorId);
 
-            try (ResultSet rs = stmt.executeQuery()) {
-                if (rs.next()) {
-                    return rs.getInt(1) > 0;
-                }
+            ResultSet rs = stmt.executeQuery();
+            if (rs.next()) {
+                return rs.getInt(1) > 0;
             }
         }
         return false;
@@ -125,13 +132,12 @@ public class CitaDAO {
     public boolean actualizarEstado(int id, String estado, String motivoCancelacion) throws SQLException {
         String sql = "UPDATE citas SET estado = ?, motivo_cancelacion = ? WHERE id = ?";
 
-        try (Connection conn = DatabaseUtil.getConnection();
-             PreparedStatement stmt = conn.prepareStatement(sql)) {
+        try (PreparedStatement stmt = conexion.prepareStatement(sql)) {
             stmt.setString(1, estado);
             stmt.setString(2, motivoCancelacion);
             stmt.setInt(3, id);
-
-            return stmt.executeUpdate() > 0;
+            stmt.executeUpdate();
+            return true;
         }
     }
 
@@ -147,13 +153,11 @@ public class CitaDAO {
                     "WHERE c.paciente_id = ? " +
                     "ORDER BY c.fecha DESC, c.hora";
                     
-        try (Connection conn = DatabaseUtil.getConnection();
-             PreparedStatement stmt = conn.prepareStatement(sql)) {
+        try (PreparedStatement stmt = conexion.prepareStatement(sql)) {
             stmt.setInt(1, pacienteId);
-            try (ResultSet rs = stmt.executeQuery()) {
-                while (rs.next()) {
-                    citas.add(mapearCita(rs));
-                }
+            ResultSet rs = stmt.executeQuery();
+            while (rs.next()) {
+                citas.add(mapearCita(rs));
             }
         }
         return citas;
@@ -171,13 +175,11 @@ public class CitaDAO {
                     "WHERE c.doctor_id = ? " +
                     "ORDER BY c.fecha DESC, c.hora";
                     
-        try (Connection conn = DatabaseUtil.getConnection();
-             PreparedStatement stmt = conn.prepareStatement(sql)) {
+        try (PreparedStatement stmt = conexion.prepareStatement(sql)) {
             stmt.setInt(1, doctorId);
-            try (ResultSet rs = stmt.executeQuery()) {
-                while (rs.next()) {
-                    citas.add(mapearCita(rs));
-                }
+            ResultSet rs = stmt.executeQuery();
+            while (rs.next()) {
+                citas.add(mapearCita(rs));
             }
         }
         return citas;
@@ -196,8 +198,7 @@ public class CitaDAO {
                     "ORDER BY c.fecha ASC, c.hora ASC " +
                     "LIMIT 10";
         
-        try (Connection conn = DatabaseUtil.getConnection();
-             PreparedStatement stmt = conn.prepareStatement(sql);
+        try (PreparedStatement stmt = conexion.prepareStatement(sql);
              ResultSet rs = stmt.executeQuery()) {
             
             while (rs.next()) {
@@ -210,8 +211,7 @@ public class CitaDAO {
     public int contarCitasHoy() throws SQLException {
         String sql = "SELECT COUNT(*) FROM citas WHERE fecha = CURDATE()";
         
-        try (Connection conn = DatabaseUtil.getConnection();
-             PreparedStatement stmt = conn.prepareStatement(sql);
+        try (PreparedStatement stmt = conexion.prepareStatement(sql);
              ResultSet rs = stmt.executeQuery()) {
             
             if (rs.next()) {
@@ -234,17 +234,41 @@ public class CitaDAO {
                     
         List<Cita> citas = new ArrayList<>();
         
-        try (Connection conn = DatabaseUtil.getConnection();
-             PreparedStatement stmt = conn.prepareStatement(sql)) {
+        try (PreparedStatement stmt = conexion.prepareStatement(sql)) {
             stmt.setDate(1, new java.sql.Date(fechaInicio.getTime()));
             stmt.setDate(2, new java.sql.Date(fechaFin.getTime()));
-            try (ResultSet rs = stmt.executeQuery()) {
-                while (rs.next()) {
-                    citas.add(mapearCita(rs));
-                }
+            ResultSet rs = stmt.executeQuery();
+            while (rs.next()) {
+                citas.add(mapearCita(rs));
             }
         }
         return citas;
+    }
+    
+    public List<String> obtenerHorasDisponibles(java.sql.Date fecha, int doctorId) throws SQLException {
+        List<String> todasLasHoras = Arrays.asList(
+            "08:00", "08:30", "09:00", "09:30", "10:00", "10:30", "11:00", "11:30",
+            "12:00", "12:30", "13:00", "13:30", "14:00", "14:30", "15:00", "15:30",
+            "16:00", "16:30", "17:00", "17:30", "18:00", "18:30", "19:00", "19:30"
+        );
+        
+        String sql = "SELECT hora FROM citas WHERE fecha = ? AND doctor_id = ? AND estado != 'CANCELADA'";
+        
+        try (PreparedStatement stmt = conexion.prepareStatement(sql)) {
+            stmt.setDate(1, fecha);
+            stmt.setInt(2, doctorId);
+            
+            Set<String> horasOcupadas = new HashSet<>();
+            try (ResultSet rs = stmt.executeQuery()) {
+                while (rs.next()) {
+                    horasOcupadas.add(rs.getString("hora"));
+                }
+            }
+            
+            return todasLasHoras.stream()
+                    .filter(hora -> !horasOcupadas.contains(hora))
+                    .collect(Collectors.toList());
+        }
     }
     
     private Cita mapearCita(ResultSet rs) throws SQLException {
