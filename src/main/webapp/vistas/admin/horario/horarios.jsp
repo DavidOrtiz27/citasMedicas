@@ -1,9 +1,13 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
+<%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
+
+<fmt:setLocale value="${param.lang != null ? param.lang : 'es'}" />
+<fmt:setBundle basename="messages" />
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <title>Gestión de Horarios - Sistema de Citas Médicas</title>
+    <title><fmt:message key="schedules.title"/></title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.7.2/font/bootstrap-icons.css" rel="stylesheet">
     <style>
@@ -461,23 +465,25 @@
             });
         }
 
-        // Cargar doctores al iniciar
+        // Cargar hroarios al iniciar
         window.addEventListener('load', function() {
-            fetch('${pageContext.request.contextPath}/admin/doctores')
-                .then(response => response.json())
-                .then(doctores => {
-                    const select = document.getElementById('doctorId');
-                    doctores.forEach(doctor => {
-                        const option = document.createElement('option');
-                        option.value = doctor.id;
-                        option.textContent = 'Dr. ' + doctor.nombres + ' ' + doctor.apellidos;
-                        select.appendChild(option);
-                    });
-                })
-                .catch(error => {
-                    console.error('Error:', error);
-                    alert('Error al cargar los doctores');
-                });
+            fetch('${pageContext.request.contextPath}/admin/horario/horarios')
+            .then(response => response.json())
+            .catch(error => {console.log(error)})
+            //fetch('${pageContext.request.contextPath}/admin/horario/horarios')
+            //    .then(response => response.json())
+            //    .then(doctores => {
+            //        const select = document.getElementById('doctorId');
+            //        doctores.forEach(doctor => {
+            //            const option = document.createElement('option');
+            //            option.value = doctor.id;
+            //            option.textContent = 'Dr. ' + doctor.nombres + ' ' + doctor.apellidos;
+            //            select.appendChild(option);
+            //        });
+            //    })
+            //    .catch(error => {
+            //        console.error('Error:', error);
+            //    });
         });
     </script>
 </body>
